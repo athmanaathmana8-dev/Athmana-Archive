@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Flight Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .flight-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .flight-header { font-weight: bold; color: #333; }
+        .price { color: #007bff; font-weight: bold; }
+        .search-form { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { padding: 8px; width: 200px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Flight Search (Mock Data)</h1>
+    
+    <div class="search-form">
+        <h3>Search Flights</h3>
+        <div class="form-group">
+            <label for="from">From:</label>
+            <select id="from">
+                <option value="Bangalore">Bangalore</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Chennai">Chennai</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="to">To:</label>
+            <select id="to">
+                <option value="Delhi">Delhi</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Chennai">Chennai</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" value="2024-01-15">
+        </div>
+        <button onclick="searchFlights()">Search Flights</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        // Mock flight data
+        const mockFlights = [
+            {
+                flight_number: 'AI101',
+                flight_company: 'Air India',
+                departing_time: '08:00:00',
+                arrival_time: '10:30:00',
+                price_economy: 15000,
+                price_business: 25000,
+                price_first: 35000,
+                available_seats: 45,
+                source: 'Bangalore',
+                destination: 'Delhi'
+            },
+            {
+                flight_number: 'SG202',
+                flight_company: 'SpiceJet',
+                departing_time: '14:30:00',
+                arrival_time: '17:00:00',
+                price_economy: 12000,
+                price_business: 20000,
+                price_first: 30000,
+                available_seats: 32,
+                source: 'Bangalore',
+                destination: 'Mumbai'
+            },
+            {
+                flight_number: '6E303',
+                flight_company: 'IndiGo',
+                departing_time: '19:45:00',
+                arrival_time: '22:15:00',
+                price_economy: 8000,
+                price_business: 15000,
+                price_first: 25000,
+                available_seats: 28,
+                source: 'Bangalore',
+                destination: 'Chennai'
+            },
+            {
+                flight_number: 'AI404',
+                flight_company: 'Air India',
+                departing_time: '06:30:00',
+                arrival_time: '09:00:00',
+                price_economy: 18000,
+                price_business: 28000,
+                price_first: 38000,
+                available_seats: 15,
+                source: 'Delhi',
+                destination: 'Bangalore'
+            },
+            {
+                flight_number: 'SG505',
+                flight_company: 'SpiceJet',
+                departing_time: '12:00:00',
+                arrival_time: '14:30:00',
+                price_economy: 13000,
+                price_business: 22000,
+                price_first: 32000,
+                available_seats: 22,
+                source: 'Mumbai',
+                destination: 'Delhi'
+            },
+            {
+                flight_number: '6E606',
+                flight_company: 'IndiGo',
+                departing_time: '16:15:00',
+                arrival_time: '18:45:00',
+                price_economy: 9000,
+                price_business: 16000,
+                price_first: 26000,
+                available_seats: 38,
+                source: 'Chennai',
+                destination: 'Mumbai'
+            }
+        ];
+
+        function searchFlights() {
+            const from = document.getElementById('from').value;
+            const to = document.getElementById('to').value;
+            const date = document.getElementById('date').value;
+            
+            // Filter flights based on search criteria
+            const filteredFlights = mockFlights.filter(flight => 
+                flight.source === from && flight.destination === to
+            );
+            
+            displayResults(filteredFlights, from, to, date);
+        }
+
+        function displayResults(flights, from, to, date) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (flights.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <h3>No flights found</h3>
+                        <p>No flights available from ${from} to ${to} on ${date}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `<h3>Found ${flights.length} flight(s) from ${from} to ${to} on ${date}</h3>`;
+            
+            flights.forEach(flight => {
+                html += `
+                    <div class="flight-card">
+                        <div class="flight-header">${flight.flight_company} ${flight.flight_number}</div>
+                        <div><strong>Departure:</strong> ${flight.departing_time}</div>
+                        <div><strong>Arrival:</strong> ${flight.arrival_time}</div>
+                        <div><strong>Available Seats:</strong> ${flight.available_seats}</div>
+                        <div class="price">
+                            Economy: ₹${flight.price_economy} | 
+                            Business: ₹${flight.price_business} | 
+                            First: ₹${flight.price_first}
+                        </div>
+                        <button onclick="bookFlight('${flight.flight_number}')" style="margin-top: 10px;">
+                            Book This Flight
+                        </button>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        function bookFlight(flightNumber) {
+            alert(`Booking flight ${flightNumber}...\n\nNote: This is a demo. In the full system, this would redirect to the booking page.`);
+        }
+
+        // Load initial results
+        window.onload = function() {
+            searchFlights();
+        };
+    </script>
+</body>
+</html>
+
+
+

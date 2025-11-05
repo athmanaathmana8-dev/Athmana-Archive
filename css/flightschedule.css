@@ -1,0 +1,129 @@
+/* Dark theme for schedule page */
+body{
+  font-family: 'Poppins', Arial, sans-serif;
+  background-color: #0f172a;
+  color:#e2e8f0;
+}
+
+.container-fluid{
+   padding: 0px;
+}
+
+.myHeader{
+  padding:10px;
+  background-color: #1D2021;
+  color:#0AB5D4;
+  padding-top:5px;
+  text-align: center;
+}
+
+h1{
+  font-size:50px;
+}
+
+.flightList{
+  background-color: #121826;
+  padding:10px;
+  border-radius:12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.text-center{
+  text-align: center;
+}
+.row{
+  display: flex;
+}
+.col-sm-2{
+  flex: 50%;
+  font-size:25px;
+}
+
+h3{
+  padding:15px;
+  color:#1e40af; /* dark blue */
+  padding-bottom: 25px;
+  font-size: 35px;
+}
+
+.flightHeader{
+  background:#1f2937;
+  padding: 10px;
+  border-radius:12px;
+  color:#e2e8f0;
+}
+.flightsMain{ padding-top:15px; }
+
+
+
+flight:hover:{
+  opacity: 0.6;
+}
+
+.flight {
+  padding:5px;
+  margin:10px;
+  border-color: #98A0A2;
+transition: .5s;
+opacity: 1;
+  border:1px;
+  border-style:solid;
+  border-radius:20px;
+    border-color: #98A0A2;
+}
+.flight:hover {
+  background-color: #1b2436;
+  transform:scale(1.1);
+  padding:20px;
+}
+
+.inputs{
+
+  background-color: #474D4F;
+  padding:10px;
+  border-radius:12px;
+  color:#EEF2F2;
+  font-size:15px;
+  letter-spacing: 0.3px;
+}
+
+input{
+  border-radius:10px;
+  border:2px;
+  margin:2px;
+}
+
+.myFooter{
+  margin-top: 40px;;
+  padding: 10px;
+  background-color: #1D2021;
+  color:#0AB5D4;
+  padding-top: 25px;
+}
+
+.myFooter p{
+  font-size: 25px;
+}
+
+.confirmation{
+
+}
+
+.flightcopy {
+transition: .5s;
+opacity: 1;
+  border:1px;
+  border-style:solid;
+  border-radius:20px;
+    border-color: #98A0A2;
+  padding:15px;
+}
+.flightcopy:hover {
+  background-color: #202627;
+  color:white;
+  transform:scale(1.1);
+  padding:20px;
+}
+
+.inputs{
+  margin-top:30px;
+}

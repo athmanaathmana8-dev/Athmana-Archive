@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Search Issue</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <style>
+        body {
+            background: #f5f5f5;
+            padding: 30px;
+            font-family: Arial;
+        }
+        .debug-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 900px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 5px solid #007bff;
+        }
+        .success { background: #d4edda; border-left-color: #28a745; }
+        .error { background: #f8d7da; border-left-color: #dc3545; }
+        .warning { background: #fff3cd; border-left-color: #ffc107; }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+        .btn-test {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-box">
+        <h1><i class="fas fa-bug"></i> Search Debug Tool</h1>
+        <p>This page will help us find out why the search isn't working.</p>
+        
+        <hr>
+        
+        <h3>Test 1: Check if search_flights.php exists</h3>
+        <button class="btn btn-primary btn-test" onclick="test1()">Run Test 1</button>
+        <div id="test1-result"></div>
+        
+        <hr>
+        
+        <h3>Test 2: Test API with Kolkata → Bangalore</h3>
+        <button class="btn btn-primary btn-test" onclick="test2()">Run Test 2</button>
+        <div id="test2-result"></div>
+        
+        <hr>
+        
+        <h3>Test 3: Check JavaScript on Frontpage.html</h3>
+        <button class="btn btn-primary btn-test" onclick="test3()">Run Test 3</button>
+        <div id="test3-result"></div>
+        
+        <hr>
+        
+        <h3>Test 4: Check if results section exists in HTML</h3>
+        <button class="btn btn-primary btn-test" onclick="test4()">Run Test 4</button>
+        <div id="test4-result"></div>
+        
+        <hr>
+        
+        <div class="text-center" style="margin-top: 30px;">
+            <button class="btn btn-success btn-test" onclick="runAllTests()">
+                <i class="fas fa-play"></i> RUN ALL TESTS
+            </button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        async function test1() {
+            const resultDiv = document.getElementById('test1-result');
+            resultDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Testing...</p>';
+            
+            try {
+                const response = await fetch('search_flights.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ from: 'Test', to: 'Test', date: '2025-11-14' })
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h5><i class="fas fa-check-circle"></i> SUCCESS</h5>
+                            <p>search_flights.php exists and is responding!</p>
+                            <p>Status: ${response.status} ${response.statusText}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="test-result error">
+                            <h5><i class="fas fa-times-circle"></i> ERROR</h5>
+                            <p>search_flights.php responded with error: ${response.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h5><i class="fas fa-times-circle"></i> FAILED</h5>
+                        <p>Cannot connect to search_flights.php</p>
+                        <p>Error: ${error.message}</p>
+                        <p><strong>Solution:</strong> Make sure XAMPP Apache is running!</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function test2() {
+            const resultDiv = document.getElementById('test2-result');
+            resultDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Searching for Kolkata to Bangalore...</p>';
+            
+            try {
+                const response = await fetch('search_flights.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: 'Kolkata',
+                        to: 'Bangalore',
+                        date: '2025-11-14'
+                    })
+                });
+                
+                const text = await response.text();
+                console.log('Raw response:', text);
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result error">
+                            <h5><i class="fas fa-times-circle"></i> JSON PARSE ERROR</h5>
+                            <p>The server returned invalid JSON</p>
+                            <details>
+                                <summary>Click to see raw response</summary>
+                                <pre>${text}</pre>
+                            </details>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const flights = Array.isArray(data) ? data : (data.flights || []);
+                
+                if (data.error) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result warning">
+                            <h5><i class="fas fa-exclamation-triangle"></i> API ERROR</h5>
+                            <p>Error: ${data.error}</p>
+                        </div>
+                    `;
+                } else if (flights.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result warning">
+                            <h5><i class="fas fa-info-circle"></i> NO FLIGHTS FOUND</h5>
+                            <p>No flights available for Kolkata → Bangalore</p>
+                            <p><strong>Solution:</strong> <a href="add_complete_network.php">Click here to add flights</a></p>
+                        </div>
+                    `;
+                } else {
+                    let flightsHTML = '<ul>';
+                    flights.forEach(flight => {
+                        flightsHTML += `<li>${flight.flight_company} ${flight.flight_number} - ₹${flight.price_economy}</li>`;
+                    });
+                    flightsHTML += '</ul>';
+                    
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h5><i class="fas fa-check-circle"></i> FLIGHTS FOUND!</h5>
+                            <p>Found ${flights.length} flight(s) for Kolkata → Bangalore</p>
+                            ${flightsHTML}
+                            <details>
+                                <summary>View raw data</summary>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h5><i class="fas fa-times-circle"></i> REQUEST FAILED</h5>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function test3() {
+            const resultDiv = document.getElementById('test3-result');
+            resultDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Checking JavaScript...</p>';
+            
+            try {
+                const response = await fetch('Frontpage.js');
+                const jsContent = await response.text();
+                
+                const hasPerformQuickSearch = jsContent.includes('performQuickSearch');
+                const hasDisplaySearchResults = jsContent.includes('displaySearchResults');
+                const hasFetchCall = jsContent.includes("fetch('search_flights.php'");
+                const hasEventListener = jsContent.includes('addEventListener');
+                
+                let issues = [];
+                if (!hasPerformQuickSearch) issues.push('performQuickSearch function not found');
+                if (!hasDisplaySearchResults) issues.push('displaySearchResults function not found');
+                if (!hasFetchCall) issues.push('Fetch call to search_flights.php not found');
+                if (!hasEventListener) issues.push('Event listener not found');
+                
+                if (issues.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h5><i class="fas fa-check-circle"></i> JAVASCRIPT OK</h5>
+                            <p>All required functions are present in Frontpage.js:</p>
+                            <ul>
+                                <li>✓ performQuickSearch function</li>
+                                <li>✓ displaySearchResults function</li>
+                                <li>✓ API fetch call</li>
+                                <li>✓ Event listeners</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="test-result error">
+                            <h5><i class="fas fa-times-circle"></i> JAVASCRIPT ISSUES</h5>
+                            <p>Found problems in Frontpage.js:</p>
+                            <ul>${issues.map(i => '<li>' + i + '</li>').join('')}</ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h5><i class="fas fa-times-circle"></i> CANNOT READ FRONTPAGE.JS</h5>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function test4() {
+            const resultDiv = document.getElementById('test4-result');
+            resultDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Checking HTML...</p>';
+            
+            try {
+                const response = await fetch('Frontpage.html');
+                const htmlContent = await response.text();
+                
+                const hasResultsSection = htmlContent.includes('search-results-section');
+                const hasResultsContainer = htmlContent.includes('search-results-container');
+                const hasQuickSearchForm = htmlContent.includes('quickSearchForm');
+                const hasJavaScriptImport = htmlContent.includes('Frontpage.js');
+                
+                let issues = [];
+                if (!hasResultsSection) issues.push('search-results-section not found in HTML');
+                if (!hasResultsContainer) issues.push('search-results-container not found in HTML');
+                if (!hasQuickSearchForm) issues.push('quickSearchForm not found in HTML');
+                if (!hasJavaScriptImport) issues.push('Frontpage.js not imported');
+                
+                if (issues.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h5><i class="fas fa-check-circle"></i> HTML STRUCTURE OK</h5>
+                            <p>All required elements are present in Frontpage.html:</p>
+                            <ul>
+                                <li>✓ search-results-section</li>
+                                <li>✓ search-results-container</li>
+                                <li>✓ quickSearchForm</li>
+                                <li>✓ Frontpage.js imported</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="test-result error">
+                            <h5><i class="fas fa-times-circle"></i> HTML ISSUES</h5>
+                            <p>Found problems in Frontpage.html:</p>
+                            <ul>${issues.map(i => '<li>' + i + '</li>').join('')}</ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h5><i class="fas fa-times-circle"></i> CANNOT READ FRONTPAGE.HTML</h5>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function runAllTests() {
+            await test1();
+            await new Promise(r => setTimeout(r, 500));
+            await test2();
+            await new Promise(r => setTimeout(r, 500));
+            await test3();
+            await new Promise(r => setTimeout(r, 500));
+            await test4();
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

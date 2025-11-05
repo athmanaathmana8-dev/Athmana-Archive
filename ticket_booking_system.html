@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Working Ticket Booking System</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f7f9fc; }
+    .nav-bar { background:#007bff; color:#fff; padding:12px 20px; }
+    .seat { width:42px; height:42px; margin:6px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; }
+    .seat.available { background:#28a745; color:#fff; }
+    .seat.occupied { background:#6c757d; color:#fff; cursor:not-allowed; opacity:0.8; }
+    .seat.selected { background:#ffc107; color:#212529; }
+    #seatMap { display:flex; flex-wrap:wrap; max-width:420px; }
+    .small-muted { font-size:0.9rem; color:#6c757d; }
+  </style>
+</head>
+<body>
+  <header class="nav-bar d-flex align-items-center">
+    <h4 class="mb-0"><span style="margin-right:8px">✈️</span>Ticket Booking System</h4>
+    <a class="btn btn-light btn-sm ml-auto" href="#" id="resetAll">Reset Stored Bookings</a>
+  </header>
+
+  <main class="container my-4">
+    <section class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Search Flights</h5>
+        <form id="searchForm" class="form-row">
+          <div class="form-group col-md-3">
+            <label for="search_from">From</label>
+            <select id="search_from" class="form-control"></select>
+          </div>
+          <div class="form-group col-md-3">
+            <label for="search_to">To</label>
+            <select id="search_to" class="form-control"></select>
+          </div>
+          <div class="form-group col-md-3">
+            <label for="search_date">Departure Date</label>
+            <input id="search_date" class="form-control" type="date" required />
+          </div>
+          <div class="form-group col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary btn-block">Search</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="row">
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Available Flights</h5>
+            <select id="flightSelect" class="form-control mb-3">
+              <option value="">-- Search to load flights --</option>
+            </select>
+            <div id="flightInfo" class="small-muted">Select a flight to view details and choose seats.</div>
+
+            <hr>
+
+            <h6 class="mb-2">Seat Map</h6>
+            <div id="seatMap" aria-live="polite"></div>
+            <div class="mt-2 small-muted">Legend: <span style="display:inline-block;width:12px;height:12px;background:#28a745;margin:0 6px;border-radius:2px"></span>Available <span style="display:inline-block;width:12px;height:12px;background:#ffc107;margin:0 6px;border-radius:2px"></span>Selected <span style="display:inline-block;width:12px;height:12px;background:#6c757d;margin:0 6px;border-radius:2px"></span>Occupied</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Passenger & Booking</h5>
+            <form id="bookingForm" novalidate>
+              <div class="form-group">
+                <label for="passengerName">Full Name *</label>
+                <input id="passengerName" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="passport">Passport / ID *</label>
+                <input id="passport" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input id="email" type="email" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone *</label>
+                <input id="phone" type="tel" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label>Selected Seats</label>
+                <div id="selectedSeatsDisplay" class="mb-2 small-muted">None</div>
+                <div class="font-weight-bold">Total: ₹<span id="totalPrice">0</span></div>
+              </div>
+
+              <button id="bookBtn" type="submit" class="btn btn-success btn-block" disabled>Book Ticket</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card" id="confirmationCard" hidden>
+          <div class="card-body">
+            <h5 class="card-title text-success">Booking Confirmed</h5>
+            <p id="confirmationText" class="small-muted mb-0"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      // Demo flights data (id must be unique)
+      const flights = [
+        { id: 'F100', from: 'Bangalore', to: 'Delhi', time: '08:00', price: 5200, seats: 30 },
+        { id: 'F101', from: 'Delhi', to: 'Mumbai', time: '11:30', price: 4300, seats: 24 },
+        { id: 'F102', from: 'Mumbai', to: 'Chennai', time: '15:45', price: 4700, seats: 28 },
+        { id: 'F103', from: 'Chennai', to: 'Bangalore', time: '19:20', price: 3800, seats: 26 }
+      ];
+
+      // A mapping of occupied seats per flight (persisted in localStorage)
+      const STORAGE_KEY = 'ticket_bookings';
+      const OCC_KEY_PREFIX = 'occupied_';
+
+      // Cached DOM
+      const searchFrom = document.getElementById('search_from');
+      const searchTo = document.getElementById('search_to');
+      const searchDate = document.getElementById('search_date');
+      const searchForm = document.getElementById('searchForm');
+
+      const flightSelect = document.getElementById('flightSelect');
+      const flightInfo = document.getElementById('flightInfo');
+      const seatMap = document.getElementById('seatMap');
+
+      const selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
+      const totalPriceEl = document.getElementById('totalPrice');
+      const bookingForm = document.getElementById('bookingForm');
+      const bookBtn = document.getElementById('bookBtn');
+
+      const confirmationCard = document.getElementById('confirmationCard');
+      const confirmationText = document.getElementById('confirmationText');
+      const resetAllBtn = document.getElementById('resetAll');
+
+      let selectedFlight = null;
+      let selectedSeats = [];
+
+      // Populate From/To selects
+      function populateRouteSelectors() {
+        const locations = Array.from(new Set(flights.flatMap(f => [f.from, f.to])));
+        locations.sort();
+        locations.forEach(loc => {
+          const o1 = document.createElement('option');
+          o1.value = loc; o1.textContent = loc;
+          const o2 = o1.cloneNode(true);
+          searchFrom.appendChild(o1);
+          searchTo.appendChild(o2);
+        });
+      }
+
+      // Set min dates to today
+      function setMinDate() {
+        const today = new Date().toISOString().split('T')[0];
+        searchDate.min = today;
+      }
+
+      // Load occupied seats from localStorage for a flight
+      function loadOccupiedSeats(flightId) {
+        try {
+          const raw = localStorage.getItem(OCC_KEY_PREFIX + flightId);
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      // Save occupied seats
+      function saveOccupiedSeats(flightId, occupied) {
+        localStorage.setItem(OCC_KEY_PREFIX + flightId, JSON.stringify(occupied));
+      }
+
+      // Create seat map UI
+      function renderSeatMap() {
+        seatMap.innerHTML = '';
+        if (!selectedFlight) return;
+        const occupied = new Set(loadOccupiedSeats(selectedFlight.id));
+        selectedSeats = []; // reset selection when flight changes
+        updateSelectionUI();
+
+        for (let i = 1; i <= selectedFlight.seats; i++) {
+          const btn = document.createElement('div');
+          btn.className = 'seat';
+          btn.textContent = i;
+          btn.setAttribute('data-seat', i);
+          if (occupied.has(i)) {
+            btn.classList.add('occupied');
+            btn.setAttribute('aria-disabled', 'true');
+          } else {
+            btn.classList.add('available');
+            btn.tabIndex = 0;
+            btn.addEventListener('click', () => toggleSeat(i, btn));
+            btn.addEventListener('keydown', (ev) => {
+              if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleSeat(i, btn); }
+            });
+          }
+          seatMap.appendChild(btn);
+        }
+      }
+
+      function toggleSeat(seatNum, element) {
+        if (element.classList.contains('occupied')) return;
+        const idx = selectedSeats.indexOf(seatNum);
+        if (idx === -1) {
+          selectedSeats.push(seatNum);
+          element.classList.add('selected');
+        } else {
+          selectedSeats.splice(idx, 1);
+          element.classList.remove('selected');
+        }
+        updateSelectionUI();
+      }
+
+      function updateSelectionUI() {
+        if (selectedSeats.length === 0) {
+          selectedSeatsDisplay.textContent = 'None';
+          bookBtn.disabled = true;
+        } else {
+          selectedSeatsDisplay.textContent = selectedSeats.sort((a,b)=>a-b).join(', ');
+          bookBtn.disabled = false;
+        }
+        const price = selectedFlight ? (selectedSeats.length * selectedFlight.price) : 0;
+        totalPriceEl.textContent = price.toString();
+      }
+
+      // Handle flight selection
+      function onFlightChange() {
+        const id = flightSelect.value;
+        selectedFlight = flights.find(f => f.id === id) || null;
+        if (selectedFlight) {
+          flightInfo.textContent = `${selectedFlight.id}: ${selectedFlight.from} → ${selectedFlight.to} | ${selectedFlight.time} | ₹${selectedFlight.price}`;
+        } else {
+          flightInfo.textContent = 'Select a flight to view details and choose seats.';
+        }
+        renderSeatMap();
+        updateSelectionUI();
+      }
+
+      // Search flights by route
+      function searchFlights(event) {
+        if (event) event.preventDefault();
+        const from = searchFrom.value;
+        const to = searchTo.value;
+        const date = searchDate.value;
+        if (!from || !to || !date) {
+          flightSelect.innerHTML = '<option value="">Please select route and date</option>';
+          return;
+        }
+        const results = flights.filter(f => f.from === from && f.to === to);
+        flightSelect.innerHTML = '';
+        if (results.length === 0) {
+          flightSelect.innerHTML = '<option value="">No flights found</option>';
+          selectedFlight = null;
+          renderSeatMap();
+        } else {
+          const defaultOpt = document.createElement('option');
+          defaultOpt.value = ''; defaultOpt.textContent = '-- Select Flight --';
+          flightSelect.appendChild(defaultOpt);
+          results.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.id;
+            opt.textContent = `${f.id} | ${f.time} | ₹${f.price}`;
+            flightSelect.appendChild(opt);
+            // if there are no occupied seats stored yet, create a small random occupied set for demo
+            const occKey = OCC_KEY_PREFIX + f.id;
+            if (localStorage.getItem(occKey) === null) {
+              const occupiedDemo = [];
+              const occCount = Math.floor(f.seats * 0.2);
+              while (occupiedDemo.length < occCount) {
+                const s = Math.floor(Math.random() * f.seats) + 1;
+                if (!occupiedDemo.includes(s)) occupiedDemo.push(s);
+              }
+              saveOccupiedSeats(f.id, occupiedDemo);
+            }
+          });
+        }
+      }
+
+      // Create booking reference
+      function createBookingRef() {
+        return 'BK' + Date.now().toString(36).toUpperCase().slice(-8) + Math.floor(Math.random()*90+10);
+      }
+
+      // Persist booking and mark seats occupied
+      function persistBooking(booking) {
+        // Save booking list
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { list = []; }
+        list.push(booking);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+        // Mark seats occupied for the flight
+        const occupied = new Set(loadOccupiedSeats(booking.flightId));
+        booking.seats.forEach(s => occupied.add(s));
+        saveOccupiedSeats(booking.flightId, Array.from(occupied));
+      }
+
+      // Handle booking submit
+      function onBook(e) {
+        e.preventDefault();
+        if (!selectedFlight || selectedSeats.length === 0) {
+          alert('Please select a flight and at least one seat.');
+          return;
+        }
+        // Simple validation
+        const name = document.getElementById('passengerName').value.trim();
+        const passport = document.getElementById('passport').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        if (!name || !passport || !email || !phone) {
+          alert('Please fill all passenger details.');
+          return;
+        }
+
+        const booking = {
+          ref: createBookingRef(),
+          flightId: selectedFlight.id,
+          route: `${selectedFlight.from}→${selectedFlight.to}`,
+          time: selectedFlight.time,
+          pricePerSeat: selectedFlight.price,
+          seats: selectedSeats.slice(),
+          passenger: { name, passport, email, phone },
+          total: selectedSeats.length * selectedFlight.price,
+          timestamp: new Date().toISOString()
+        };
+
+        persistBooking(booking);
+
+        // Update UI: mark seats occupied and clear selection
+        renderSeatMap();
+        selectedSeats = [];
+        updateSelectionUI();
+
+        // Show confirmation
+        confirmationCard.hidden = false;
+        confirmationText.innerHTML = `Booking Ref: <strong>${booking.ref}</strong><br>
+          ${booking.route} | ${booking.time}<br>
+          Seats: ${booking.seats.join(', ')}<br>
+          Total Paid: ₹${booking.total}<br>
+          Passenger: ${booking.passenger.name} (${booking.passenger.passport})`;
+
+        // disable booking form for this flight briefly
+        bookBtn.disabled = true;
+        bookingForm.reset();
+      }
+
+      // Reset stored bookings (for demo)
+      function resetStoredData() {
+        if (!confirm('Clear all stored bookings and seating data?')) return;
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          flights.forEach(f => localStorage.removeItem(OCC_KEY_PREFIX + f.id));
+        } catch {}
+        location.reload();
+      }
+
+      // Init
+      function init() {
+        populateRouteSelectors();
+        setMinDate();
+
+        searchForm.addEventListener('submit', searchFlights);
+        flightSelect.addEventListener('change', onFlightChange);
+        bookingForm.addEventListener('submit', onBook);
+        resetAllBtn.addEventListener('click', (e) => { e.preventDefault(); resetStoredData(); });
+
+        // prefill today's date
+        const today = new Date().toISOString().split('T')[0];
+        searchDate.value = today;
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

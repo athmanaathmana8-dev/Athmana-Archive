@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Page</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #1a4d7a;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card { 
+      margin-top: 30px;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .ticket-section {
+      background: #f8f9fa;
+      color: #333;
+      padding: 30px;
+      border-radius: 15px 15px 0 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .ticket-details {
+      background: white;
+      padding: 30px;
+    }
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .ticket-row:last-child {
+      border-bottom: none;
+    }
+    .ticket-label {
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+    .ticket-value {
+      color: #666;
+      font-size: 15px;
+    }
+    .amount-value {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .payment-section {
+      padding: 30px;
+      background: #f8f9fa;
+    }
+    .form-group label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .form-control {
+      border: 2px solid #e0e0e0;
+      padding: 12px 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      background-color: #fff;
+    }
+    .form-control:focus {
+      border-color: #667eea;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-control:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+    select.form-control {
+      height: 48px;
+      line-height: 1.5;
+      padding: 12px 35px 12px 15px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+    }
+    select.form-control:focus {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      padding: 12px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 25px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    .form-control.is-valid:not(select) {
+      border-color: #28a745;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    .form-control.is-invalid:not(select) {
+      border-color: #dc3545;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    select.form-control.is-valid,
+    select.form-control.is-invalid {
+      padding-right: 35px;
+    }
+    .invalid-feedback {
+      display: none;
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    .invalid-feedback.show {
+      display: block;
+    }
+    .valid-feedback {
+      display: none;
+      color: #28a745;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    .valid-feedback.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 800px;">
+    <div class="card">
+      <div class="ticket-section text-center" style="position: relative;">
+        <button onclick="goBack()" style="position: absolute; left: 20px; top: 20px; background: #667eea; color: white; border: 2px solid #667eea; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#5568d3'; this.style.borderColor='#5568d3'" onmouseout="this.style.background='#667eea'; this.style.borderColor='#667eea'">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <h2><i class="fas fa-plane"></i> Flight Ticket</h2>
+        <p class="mb-0">Booking Confirmation</p>
+      </div>
+      
+      <div class="ticket-details">
+        <div class="ticket-row">
+          <div class="ticket-label">Passenger Name:</div>
+          <div class="ticket-value" id="passengerName">Guest Passenger</div>
+        </div>
+        <div class="ticket-row" id="dateOfBirthRow" style="display: none;">
+          <div class="ticket-label">Date of Birth:</div>
+          <div class="ticket-value" id="dateOfBirth">-</div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-label">Flight:</div>
+          <div class="ticket-value" id="flightName">Not selected</div>
+        </div>
+        <div class="ticket-row" id="outboundClassRow">
+          <div class="ticket-label">Outbound Class:</div>
+          <div class="ticket-value" id="travelClass">Economy</div>
+        </div>
+        <div class="ticket-row" id="returnClassRow" style="display: none;">
+          <div class="ticket-label">Return Class:</div>
+          <div class="ticket-value" id="returnTravelClass">Economy</div>
+        </div>
+        <div class="ticket-row" id="outboundAmountRow" style="display: none;">
+          <div class="ticket-label">Outbound Amount:</div>
+          <div class="amount-value" id="outboundAmount">₹0</div>
+        </div>
+        <div class="ticket-row" id="returnAmountRow" style="display: none;">
+          <div class="ticket-label">Return Amount:</div>
+          <div class="amount-value" id="returnAmount">₹0</div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-label">Total Amount:</div>
+          <div class="amount-value" id="totalAmount">₹0</div>
+        </div>
+      </div>
+
+      <div class="payment-section">
+        <h4 class="mb-4"><i class="fas fa-credit-card"></i> Payment Details</h4>
+        <form id="paymentForm" onsubmit="event.preventDefault(); confirmPayment();">
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" class="form-control" name="cardholder_name" id="cardholder_name" required placeholder="Enter name as on card">
+            <div class="invalid-feedback" id="cardholder_name_error"></div>
+            <div class="valid-feedback">Looks good!</div>
+          </div>
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" class="form-control" name="card_number" id="card_number" maxlength="19" required placeholder="0000 0000 0000 0000">
+            <div class="invalid-feedback" id="card_number_error"></div>
+            <div class="valid-feedback">Valid card number!</div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <div class="form-group">
+                <label>Expiry Date</label>
+                <input type="month" class="form-control" name="expiry_date" id="expiry_date" required>
+                <div class="invalid-feedback" id="expiry_date_error"></div>
+                <div class="valid-feedback">Valid!</div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>CVV</label>
+                <input type="text" class="form-control" name="cvv" id="cvv" maxlength="3" pattern="[0-9]{3}" required placeholder="123">
+                <div class="invalid-feedback" id="cvv_error"></div>
+                <div class="valid-feedback">Valid!</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select class="form-control" name="payment_method" id="payment_method" required>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Debit Card">Debit Card</option>
+              <option value="Net Banking">Net Banking</option>
+              <option value="UPI">UPI</option>
+              <option value="Wallet">Wallet</option>
+            </select>
+          </div>
+          <div class="text-center mt-4">
+            <button class="btn btn-primary btn-lg" type="submit">Pay Now</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999;">
+    <div style="display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; padding: 20px;">
+      <div style="background: white; padding: 50px; border-radius: 20px; text-align: center; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out;">
+        <div style="color: #28a745; font-size: 80px; margin-bottom: 20px;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 style="color: #28a745; margin-bottom: 20px;">Payment Successful!</h2>
+        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Your booking has been confirmed.</p>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+          <p style="font-size: 16px; color: #333; margin: 10px 0;"><strong>Booking Reference:</strong></p>
+          <p style="font-size: 24px; color: #28a745; font-weight: bold; font-family: monospace; margin: 10px 0;" id="successBookingRef">BR-XXXXXXXX</p>
+        </div>
+        <p style="color: #666; font-size: 14px;">Redirecting to confirmation page...</p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+
+  <script>
+    // Back button function
+    function goBack() {
+      if (confirm('Are you sure you want to go back? Your payment information will be lost.')) {
+        window.history.back();
+      }
+    }
+    
+    // Fetch data from URL query params
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById('passengerName').textContent = urlParams.get('name') || 'Guest Passenger';
+    
+    // Display date of birth if available
+    const dob = urlParams.get('dob');
+    if (dob) {
+      document.getElementById('dateOfBirth').textContent = dob;
+      document.getElementById('dateOfBirthRow').style.display = 'flex';
+    }
+    
+    // Check if it's a round trip
+    const isRoundTrip = urlParams.get('roundtrip') === 'true';
+    const outboundClass = urlParams.get('class') || 'Economy';
+    const returnClass = urlParams.get('return_class');
+    
+    // Display travel class(es)
+    if (isRoundTrip && returnClass) {
+      // Show both outbound and return classes
+      document.getElementById('outboundClassRow').querySelector('.ticket-label').textContent = 'Outbound Class:';
+      document.getElementById('travelClass').textContent = outboundClass;
+      document.getElementById('returnClassRow').style.display = 'flex';
+      document.getElementById('returnTravelClass').textContent = returnClass;
+    } else {
+      // Show single travel class
+      document.getElementById('outboundClassRow').querySelector('.ticket-label').textContent = 'Travel Class:';
+      document.getElementById('travelClass').textContent = outboundClass;
+      document.getElementById('returnClassRow').style.display = 'none';
+    }
+    
+    // Display flight name
+    const flight = urlParams.get('flight') || 'Not selected';
+    document.getElementById('flightName').textContent = flight;
+    
+    // Display individual amounts
+    const outboundPrice = urlParams.get('outbound_price');
+    const returnPrice = urlParams.get('return_price');
+    
+    if (outboundPrice) {
+      const formattedOutbound = parseFloat(outboundPrice).toLocaleString('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      });
+      document.getElementById('outboundAmount').textContent = formattedOutbound;
+      document.getElementById('outboundAmountRow').style.display = 'flex';
+    }
+    
+    if (returnPrice) {
+      const formattedReturn = parseFloat(returnPrice).toLocaleString('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      });
+      document.getElementById('returnAmount').textContent = formattedReturn;
+      document.getElementById('returnAmountRow').style.display = 'flex';
+    }
+    
+    // Calculate and display total amount
+    let total = 0;
+    if (outboundPrice) {
+      total += parseFloat(outboundPrice);
+    }
+    if (returnPrice) {
+      total += parseFloat(returnPrice);
+    }
+    
+    // If no individual prices, use the total from URL
+    if (total === 0) {
+      total = parseFloat(urlParams.get('total') || 0);
+    }
+    
+    if (total > 0) {
+      const formattedTotal = total.toLocaleString('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      });
+      document.getElementById('totalAmount').textContent = formattedTotal;
+    }
+
+    // ==================== VALIDATION FUNCTIONS ====================
+    
+    // Validate Cardholder Name
+    function validateCardholderName(input) {
+      const name = input.value.trim();
+      const errorElement = document.getElementById('cardholder_name_error');
+      
+      if (name === '') {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'Cardholder name is required';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      if (name.length < 3) {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'Name must be at least 3 characters';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      if (!/^[a-zA-Z\s]+$/.test(name)) {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'Name should contain only letters';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      errorElement.classList.remove('show');
+      return true;
+    }
+    
+    // Validate Card Number
+    function validateCardNumber(input) {
+      const cardNumber = input.value.replace(/\s/g, '');
+      const errorElement = document.getElementById('card_number_error');
+      
+      if (cardNumber === '') {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'Card number is required';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      errorElement.classList.remove('show');
+      return true;
+    }
+    
+    // Validate Expiry Date
+    function validateExpiryDate(input) {
+      const expiryValue = input.value;
+      const errorElement = document.getElementById('expiry_date_error');
+      
+      if (expiryValue === '') {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'Expiry date is required';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      const [year, month] = expiryValue.split('-').map(Number);
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      if (year < currentYear || (year === currentYear && month < currentMonth)) {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'Card has expired';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      errorElement.classList.remove('show');
+      return true;
+    }
+    
+    // Validate CVV
+    function validateCVV(input) {
+      const cvv = input.value.trim();
+      const errorElement = document.getElementById('cvv_error');
+      
+      if (cvv === '') {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'CVV is required';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      if (!/^\d+$/.test(cvv)) {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'CVV must contain only digits';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      if (cvv.length !== 3) {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        errorElement.textContent = 'CVV must be exactly 3 digits';
+        errorElement.classList.add('show');
+        return false;
+      }
+      
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      errorElement.classList.remove('show');
+      return true;
+    }
+    
+    // ==================== INPUT EVENT LISTENERS ====================
+    
+    // Cardholder Name Validation
+    const cardholderNameInput = document.getElementById('cardholder_name');
+    if (cardholderNameInput) {
+      cardholderNameInput.addEventListener('input', function() {
+        validateCardholderName(this);
+      });
+      cardholderNameInput.addEventListener('blur', function() {
+        validateCardholderName(this);
+      });
+    }
+    
+    // Format card number input (add spaces every 4 digits)
+    const cardNumberInput = document.getElementById('card_number');
+    if (cardNumberInput) {
+      cardNumberInput.addEventListener('input', function(e) {
+        // Remove all non-digits
+        let value = e.target.value.replace(/\D/g, '');
+        // Add spaces every 4 digits
+        value = value.match(/.{1,4}/g)?.join(' ') || value;
+        // Limit to 16 digits (19 characters with spaces)
+        if (value.length > 19) value = value.substring(0, 19);
+        e.target.value = value;
+      });
+      cardNumberInput.addEventListener('blur', function() {
+        validateCardNumber(this);
+      });
+    }
+    
+    // Expiry Date Validation
+    const expiryDateInput = document.getElementById('expiry_date');
+    if (expiryDateInput) {
+      expiryDateInput.addEventListener('change', function() {
+        validateExpiryDate(this);
+      });
+      expiryDateInput.addEventListener('blur', function() {
+        validateExpiryDate(this);
+      });
+    }
+
+    // CVV input - numbers only with validation
+    const cvvInput = document.getElementById('cvv');
+    if (cvvInput) {
+      cvvInput.addEventListener('input', function(e) {
+        // Remove all non-digits
+        e.target.value = e.target.value.replace(/\D/g, '');
+        
+        // Validate after input
+        if (e.target.value.length >= 3) {
+          validateCVV(e.target);
+        }
+      });
+      cvvInput.addEventListener('blur', function() {
+        validateCVV(this);
+      });
+    }
+
+    function confirmPayment() {
+      // Validate all fields before submission
+      const cardholderName = document.getElementById('cardholder_name');
+      const cardNumber = document.getElementById('card_number');
+      const expiryDate = document.getElementById('expiry_date');
+      const cvv = document.getElementById('cvv');
+      
+      const isCardholderValid = validateCardholderName(cardholderName);
+      const isCardNumberValid = validateCardNumber(cardNumber);
+      const isExpiryValid = validateExpiryDate(expiryDate);
+      const isCvvValid = validateCVV(cvv);
+      
+      // If any validation fails, prevent submission
+      if (!isCardholderValid || !isCardNumberValid || !isExpiryValid || !isCvvValid) {
+        alert('⚠️ Please fix the errors in the form before submitting.\n\n' +
+              'Check:\n' +
+              (!isCardholderValid ? '- Cardholder Name\n' : '') +
+              (!isCardNumberValid ? '- Card Number\n' : '') +
+              (!isExpiryValid ? '- Expiry Date\n' : '') +
+              (!isCvvValid ? '- CVV\n' : ''));
+        return;
+      }
+      
+      // Get payment form data
+      const form = document.getElementById('paymentForm');
+      const formData = new FormData(form);
+      
+      // Get booking data from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const isRoundTrip = urlParams.get('roundtrip') === 'true';
+      
+      // Get outbound flight details
+      const outboundSeat = urlParams.get('seat');
+      const outboundFlight = urlParams.get('flight');
+      
+      // Validate that seat is provided
+      if (!outboundSeat) {
+        alert('Error: Seat selection is missing. Please go back and select a seat.');
+        return;
+      }
+      
+      // Extract individual flight from combined string (e.g., "IndiGo 6E121 / IndiGo 6E121")
+      let outboundFlightNum = outboundFlight;
+      if (outboundFlight && outboundFlight.includes(' / ')) {
+        outboundFlightNum = outboundFlight.split(' / ')[0];
+      }
+      
+      const paymentData = {
+        passenger_name: urlParams.get('name') || 'Guest Passenger',
+        email: urlParams.get('email') || 'guest@example.com',
+        phone: urlParams.get('phone') || '0000000000',
+        p_id: urlParams.get('p_id') || 'GUEST' + Math.floor(Math.random() * 10000),
+        date_of_birth: urlParams.get('date_of_birth') || urlParams.get('dob') || null,
+        flying_from: urlParams.get('from') || 'Bangalore',
+        flying_to: urlParams.get('to') || 'Delhi',
+        departing_date: urlParams.get('date') || new Date().toISOString().split('T')[0],
+        selected_flight: outboundFlightNum,
+        class: urlParams.get('class') || 'Economy',
+        selected_seat: outboundSeat,
+        payment_method: formData.get('payment_method') || 'Credit Card',
+        is_round_trip: isRoundTrip
+      };
+      
+      // Add return flight details if round trip
+      if (isRoundTrip) {
+        const returnSeat = urlParams.get('return_seat');
+        const returnClass = urlParams.get('return_class');
+        const returnFlight = urlParams.get('return_flight');
+        
+        if (!returnSeat || !returnClass || !returnFlight) {
+          alert('Error: Round trip booking is incomplete. Please go back and complete the return flight selection.');
+          return;
+        }
+        
+        // Extract return flight number
+        let returnFlightNum = returnFlight;
+        if (returnFlight && returnFlight.includes(' / ')) {
+          const parts = returnFlight.split(' / ');
+          returnFlightNum = parts.length > 1 ? parts[1] : parts[0];
+        }
+        
+        paymentData.return_flight = returnFlightNum;
+        paymentData.return_seat = returnSeat;
+        paymentData.return_class = returnClass;
+        paymentData.return_from = urlParams.get('to');
+        paymentData.return_to = urlParams.get('from');
+        paymentData.return_date = urlParams.get('date'); // Could be different, but use same for now
+      }
+      
+      // Debug logging
+      console.log('Payment data to be sent:', paymentData);
+      
+      // Validate required fields
+      if (!paymentData.passenger_name || !paymentData.selected_flight || !paymentData.selected_seat) {
+        alert('Error: Missing required booking information. Please go back and complete the booking form.\n\n' +
+              'Missing fields:\n' +
+              (!paymentData.passenger_name ? '- Passenger name\n' : '') +
+              (!paymentData.selected_flight ? '- Flight selection\n' : '') +
+              (!paymentData.selected_seat ? '- Seat selection\n' : ''));
+        return;
+      }
+      
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
+      submitBtn.disabled = true;
+      
+      // Check if we're running on localhost (XAMPP)
+      const isLocalhost = window.location.protocol === 'http:' && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+      
+      if (!isLocalhost && window.location.protocol === 'file:') {
+        alert('Error: This page must be accessed through XAMPP server.\n\n' +
+              'Please:\n' +
+              '1. Make sure XAMPP Apache is running\n' +
+              '2. Access this page via: http://localhost/MINIPROJECT1/payment.html\n' +
+              '3. Do NOT open the HTML file directly by double-clicking it');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        return;
+      }
+      
+      // Process payment and booking confirmation
+      fetch('process_payment.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
+      })
+      .then(async response => {
+        console.log("res",response);
+
+        // Try to parse JSON response regardless of status code to get error details
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+        console.log("case1");
+
+          // If JSON parsing fails, throw a generic error
+          throw new Error(`Server error (Status ${response.status}): Unable to parse response`);
+        }
+        
+        // If response is not OK, use the error message from the response
+        if (!response.ok) {
+        console.log("case2");
+
+          throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        // Return the parsed data for success case
+        return data;
+      })
+      .then(data => {
+        console.log("data",data);
+        
+        if (data.success) {
+          // Show success modal
+          document.getElementById('successBookingRef').textContent = data.booking_reference || 'N/A';
+          document.getElementById('successModal').style.display = 'block';
+          
+          // Redirect to booking confirmation after 3 seconds
+          setTimeout(() => {
+            const homeUrl = `booking_confirmation.php?ref=${data.booking_reference}&ticket=${data.ticket_number}`;
+            window.location.href = homeUrl;
+          }, 3000);
+        } else {
+          throw new Error(data.error || 'Payment processing failed');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        
+        let errorMessage = 'Payment processing failed: ' + error.message;
+        
+        // Provide more helpful error messages
+        if (error.message.includes('refused') || error.message.includes('Failed to fetch')) {
+          errorMessage = 'Connection Error: Unable to reach the server.\n\n' +
+                        'Please ensure:\n' +
+                        '1. XAMPP Apache is running (check XAMPP Control Panel)\n' +
+                        '2. You are accessing this page via: http://localhost/MINIPROJECT1/payment.html\n' +
+                        '3. The process_payment.php file exists in the same folder\n\n' +
+                        'Original error: ' + error.message;
+        }
+        
+        alert(errorMessage);
+        
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>

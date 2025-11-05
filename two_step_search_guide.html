@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Step Flight Search Guide</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            font-family: Arial;
+            min-height: 100vh;
+        }
+        .guide {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6c757d;
+            font-size: 20px;
+            margin-bottom: 50px;
+        }
+        .workflow {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+            margin: 40px 0;
+        }
+        .step-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 3px solid #007bff;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .step-card.step2 {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+        .step-number {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            line-height: 60px;
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .step2 .step-number {
+            background: #28a745;
+        }
+        .arrow {
+            font-size: 50px;
+            color: #667eea;
+        }
+        .btn-demo {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .btn-primary-demo {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        .btn-success-demo {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+        }
+        .info-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .success-box {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .example {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .example h4 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .workflow {
+                grid-template-columns: 1fr;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="guide">
+        <h1><i class="fas fa-plane-departure"></i> Two-Step Flight Search</h1>
+        <p class="subtitle">How to search and view available flights</p>
+
+        <div class="success-box">
+            <h3><i class="fas fa-magic"></i> How It Works Now</h3>
+            <p style="font-size: 18px;">The system now uses a <strong>two-step process</strong> for finding flights:</p>
+            <ol style="font-size: 16px; line-height: 2;">
+                <li><strong>Step 1:</strong> Click "Search" to find and store flights</li>
+                <li><strong>Step 2:</strong> Click "Available Flights" to display the stored results</li>
+            </ol>
+        </div>
+
+        <div class="workflow">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 style="color: #007bff;">Search</h3>
+                <p style="margin: 20px 0;">Fill in FROM, TO, and DATE, then click:</p>
+                <button class="btn-demo btn-primary-demo">
+                    <i class="fas fa-search"></i> SEARCH
+                </button>
+                <p style="margin-top: 20px; font-size: 14px; color: #6c757d;">
+                    <strong>What it does:</strong><br>
+                    Fetches flights and stores them in memory
+                </p>
+            </div>
+
+            <div class="arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+
+            <div class="step-card step2">
+                <div class="step-number">2</div>
+                <h3 style="color: #28a745;">Available Flights</h3>
+                <p style="margin: 20px 0;">After search completes, click:</p>
+                <button class="btn-demo btn-success-demo">
+                    <i class="fas fa-plane"></i> AVAILABLE FLIGHTS
+                </button>
+                <p style="margin-top: 20px; font-size: 14px; color: #6c757d;">
+                    <strong>What it does:</strong><br>
+                    Displays the stored flight results
+                </p>
+            </div>
+        </div>
+
+        <hr style="margin: 50px 0;">
+
+        <div class="example">
+            <h4><i class="fas fa-lightbulb"></i> Complete Example</h4>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h5>Step 1: Fill in the search form</h5>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0;">
+                    <div>
+                        <strong>FROM:</strong> Delhi (DEL)
+                    </div>
+                    <div>
+                        <strong>TO:</strong> Ahmedabad (AMD)
+                    </div>
+                    <div>
+                        <strong>DATE:</strong> 11/13/2025
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #007bff;">
+                <h5><i class="fas fa-hand-pointer"></i> Step 2: Click "Search"</h5>
+                <p>The system will:</p>
+                <ul>
+                    <li>Search for flights from Delhi to Ahmedabad</li>
+                    <li>Store the results in memory</li>
+                    <li>Show "Search Complete" message</li>
+                </ul>
+                <div class="alert alert-success" style="margin-top: 15px;">
+                    <strong>✓ Search Complete!</strong><br>
+                    Found 4 flight(s) from Delhi to Ahmedabad<br>
+                    <em>Click "Available Flights" button below to view results</em>
+                </div>
+            </div>
+
+            <div style="background: #d4edda; padding: 20px; border-radius: 10px; border-left: 5px solid #28a745;">
+                <h5><i class="fas fa-hand-pointer"></i> Step 3: Click "Available Flights"</h5>
+                <p>Now you'll see the flight list:</p>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <strong>✈️ IndiGo 6E201</strong><br>
+                    07:00 → 08:00 | Delhi → Ahmedabad<br>
+                    <strong class="text-success">₹3,500</strong> | 180 seats<br>
+                    <button class="btn btn-sm btn-success mt-2">Select Flight</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4><i class="fas fa-info-circle"></i> Important Notes</h4>
+            <ul style="font-size: 16px; line-height: 2;">
+                <li>✅ You must click <strong>"Search"</strong> first before clicking "Available Flights"</li>
+                <li>✅ The search stores results temporarily (until page refresh)</li>
+                <li>✅ If you see "No Search Results", click Search first</li>
+                <li>✅ You can search multiple times - each search updates the stored data</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h4><i class="fas fa-check-circle"></i> Benefits of This Approach</h4>
+            <ul style="font-size: 16px; line-height: 2;">
+                <li>🎯 <strong>Controlled Display:</strong> Search when ready, view when ready</li>
+                <li>💾 <strong>Data Storage:</strong> Results saved for quick viewing</li>
+                <li>🔄 <strong>Re-viewable:</strong> Click "Available Flights" anytime to see results again</li>
+                <li>⚡ <strong>Fast Display:</strong> No re-fetching needed when showing flights</li>
+            </ul>
+        </div>
+
+        <hr style="margin: 50px 0;">
+
+        <div class="text-center">
+            <h3 style="color: #2c3e50; margin-bottom: 30px;">Ready to Try?</h3>
+            <a href="add_complete_network.php" class="btn btn-success btn-lg" style="margin: 10px; padding: 20px 40px; font-size: 18px;">
+                <i class="fas fa-database"></i> Step 0: Add Flights First
+            </a>
+            <br>
+            <a href="Frontpage.html" class="btn btn-primary btn-lg" style="margin: 10px; padding: 20px 40px; font-size: 18px;">
+                <i class="fas fa-home"></i> Go to Home Page & Try It
+            </a>
+        </div>
+
+        <div class="info-box" style="margin-top: 40px;">
+            <h4><i class="fas fa-question-circle"></i> Troubleshooting</h4>
+            <p><strong>If "Available Flights" shows "No Search Results":</strong></p>
+            <ul>
+                <li>Make sure you clicked the "Search" button first</li>
+                <li>Check that FROM, TO, and DATE are filled in</li>
+                <li>Wait for "Search Complete" message before clicking Available Flights</li>
+            </ul>
+            <p><strong>If Search returns no flights:</strong></p>
+            <ul>
+                <li>Add flights to database using the link above</li>
+                <li>Make sure XAMPP Apache & MySQL are running</li>
+                <li>Try a different route (e.g., Delhi → Ahmedabad)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+
+

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airport Management System - Home</title>
+
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Acme&family=Lobster&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Oswald|Roboto" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/Frontpage.css?v=7.2">
+</head>
+
+<body>
+  <!-- Hero Section -->
+  <section id="hero-section">
+    <div class="hero-background">
+      <img src="https://cdn.pixabay.com/photo/2020/06/14/16/15/airplane-5298452_1280.jpg" alt="Airport Background" class="hero-image">
+      <div class="hero-overlay"></div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#hero-section">
+          <i class="fas fa-plane"></i> FLY HIGH
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="#hero-section">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Ticketbooking.html">Book Now</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="ConfirmedFlights.html">Confirmed Flights</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="booking_status.html">Booking Status</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Adminloginpage.html">Admin</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#contact-section">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Content -->
+    <div class="hero-content">
+      <div class="container">
+        <div class="row align-items-center min-vh-100">
+          <div class="col-lg-8 mx-auto text-center">
+            <h2 class="hero-subtitle">
+              <i class="fas fa-plane"></i> Let's Go Travel
+            </h2>
+            <p class="hero-description">
+              Experience seamless flight booking with our advanced airport management system. 
+              Book tickets, select seats, and manage your travel with ease.
+            </p>
+            <div class="hero-buttons">
+              <a href="Ticketbooking.html" class="btn btn-primary btn-lg mr-3">
+                <i class="fas fa-ticket-alt"></i> Book Flight
+              </a>
+              <a href="Flightschedule.php" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-calendar-alt"></i> View Schedule
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <!-- Quick Booking Section -->
+  <section id="quick-booking" class="py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+          <div class="text-center mb-4">
+            <h2 class="section-title">Quick Flight Search</h2>
+            <p class="section-subtitle">Search for flights and view available options</p>
+          </div>
+          <div class="card shadow-lg border-0">
+            <div class="card-body p-4">
+              <form id="quickSearchForm" onsubmit="return false;">
+                <div class="row">
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="form-group">
+                      <label class="form-label">From</label>
+                      <select class="form-control form-control-lg" id="quick_from" required>
+                        <option value="">Select Origin</option>
+                        <option value="Bangalore">Bangalore (BLR)</option>
+                        <option value="Delhi">Delhi (DEL)</option>
+                        <option value="Mumbai">Mumbai (BOM)</option>
+                        <option value="Chennai">Chennai (MAA)</option>
+                        <option value="Hyderabad">Hyderabad (HYD)</option>
+                        <option value="Kolkata">Kolkata (CCU)</option>
+                        <option value="Pune">Pune (PNQ)</option>
+                        <option value="Kochi">Kochi (COK)</option>
+                        <option value="Goa">Goa (GOI)</option>
+                        <option value="Ahmedabad">Ahmedabad (AMD)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="form-group">
+                      <label class="form-label">To</label>
+                      <select class="form-control form-control-lg" id="quick_to" required>
+                        <option value="">Select Destination</option>
+                        <option value="Bangalore">Bangalore (BLR)</option>
+                        <option value="Delhi">Delhi (DEL)</option>
+                        <option value="Mumbai">Mumbai (BOM)</option>
+                        <option value="Chennai">Chennai (MAA)</option>
+                        <option value="Hyderabad">Hyderabad (HYD)</option>
+                        <option value="Kolkata">Kolkata (CCU)</option>
+                        <option value="Pune">Pune (PNQ)</option>
+                        <option value="Kochi">Kochi (COK)</option>
+                        <option value="Goa">Goa (GOI)</option>
+                        <option value="Ahmedabad">Ahmedabad (AMD)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="form-group">
+                      <label class="form-label">Departure Date</label>
+                      <input type="date" class="form-control form-control-lg" id="quick_date" required>
+                    </div>
+                  </div>
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="form-group">
+                      <label class="form-label">&nbsp;</label>
+                      <button type="button" class="btn btn-primary w-100" onclick="searchFlights()">
+                        <i class="fas fa-search"></i> Search Flights
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search Results Section -->
+  <section id="search-results-section" class="py-5" style="display: none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 300px;">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="text-center mb-5">
+            <h2 class="section-title" style="color: #2c3e50; font-size: 2.5rem; font-weight: 700;">
+              <i class="fas fa-plane-departure"></i> Available Flights
+            </h2>
+            <p class="section-subtitle" id="search-results-subtitle" style="font-size: 1.2rem; color: #6c757d;">
+              Found flights matching your search
+            </p>
+          </div>
+          <div id="search-results-container">
+            <!-- Flight results will be displayed here dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Weather Widget Section -->
+  <section id="weather-section" class="py-4 bg-info">
+    <div class="container text-center">
+      <a class="weatherwidget-io" href="https://forecast7.com/en/12d9777d59/bengaluru/" data-label_1="BANGALORE" data-label_2="WEATHER" data-theme="original">BANGALORE WEATHER</a>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about-section" class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center mb-5">
+          <h2 class="section-title">About Our Services</h2>
+          <p class="section-subtitle">Experience world-class airport services</p>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-img-wrapper">
+              <img class="card-img-top" src="https://www.luxurylifestylemag.co.uk/wp-content/uploads/2019/11/RELAXING-APRON-VIEWS-FROM-THE-AIRPORT-LOUNGE-WORLD-MUNICH-INTERNATIONAL-AIRPORT.jpg" alt="Airport Lounge">
+            </div>
+            <div class="card-body text-center">
+              <h5 class="card-title"><i class="fas fa-couch"></i> Premium Lounges</h5>
+              <p class="card-text">Unwind at our luxurious lounges before your journey with complimentary refreshments and comfortable seating.</p>
+            </div>
+            <div class="card-footer bg-transparent">
+              <small class="text-muted">Available 24/7</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-img-wrapper">
+              <img class="card-img-top" src="https://m.economictimes.com/thumb/msid-60188264,width-1200,height=900,resizemode-4,imgsize-120082/magazines/panache/looking-for-a-new-job-how-about-shopping-for-someone-else-at-rs-25000-per-day/shop_640x480_thinkstock.jpg" alt="Shopping">
+            </div>
+            <div class="card-body text-center">
+              <h5 class="card-title"><i class="fas fa-shopping-bag"></i> Duty-Free Shopping</h5>
+              <p class="card-text">Pamper yourself with globally branded accessories, clothes, and exclusive duty-free products.</p>
+            </div>
+            <div class="card-footer bg-transparent">
+              <small class="text-muted">Tax-free shopping</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-img-wrapper">
+              <img class="card-img-top" src="https://static.toiimg.com/thumb/64029527.cms?width=1200&height=900" alt="Restaurant">
+            </div>
+            <div class="card-body text-center">
+              <h5 class="card-title"><i class="fas fa-utensils"></i> Fine Dining</h5>
+              <p class="card-text">Treat your taste buds to burst flavors from our tantalizing restaurants and cafes offering international cuisine.</p>
+            </div>
+            <div class="card-footer bg-transparent">
+              <small class="text-muted">Multiple cuisines available</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modern Image Carousel Section -->
+  <section id="modern-carousel" class="py-5 bg-light">
+    <div class="container">
+      <div class="text-center mb-3">
+        <h2 class="section-title" style="font-size: 1.8rem; margin-bottom: 8px;">Explore Our World-Class Facilities</h2>
+        <p class="section-subtitle" style="font-size: 1rem;">Experience luxury, comfort, and convenience at every step</p>
+      </div>
+      
+      <div class="carousel-container">
+        <div class="carousel-wrapper">
+          <div class="carousel-slides" id="carouselSlides">
+            <!-- Slide 1: Airport Terminal -->
+            <div class="carousel-slide active">
+              <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&h=600&fit=crop" alt="Modern Airport Terminal">
+              <div class="carousel-caption">
+                <h3>State-of-the-Art Terminal</h3>
+                <p>Experience world-class airport facilities with modern amenities</p>
+              </div>
+            </div>
+            
+            <!-- Slide 2: Airport Runway -->
+            <div class="carousel-slide">
+              <img src="https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=1200&h=600&fit=crop" alt="Airport Runway">
+              <div class="carousel-caption">
+                <h3>Premium Flight Services</h3>
+                <p>Safe and comfortable journeys with top airlines</p>
+              </div>
+            </div>
+            
+            <!-- Slide 3: Airport Lounge -->
+            <div class="carousel-slide">
+              <img src="https://piainterior.com/wp-content/uploads/2019/12/KTB-Precious-Plus-Siam-Paragon-02.jpg" alt="Luxury Airport Lounge">
+              <div class="carousel-caption">
+                <h3>Luxury Lounges</h3>
+                <p>Relax in our premium lounges before your flight</p>
+              </div>
+            </div>
+            
+            <!-- Slide 4: Shopping -->
+            <div class="carousel-slide">
+              <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=600&fit=crop" alt="Duty Free Shopping">
+              <div class="carousel-caption">
+                <h3>Duty-Free Shopping</h3>
+                <p>Shop from exclusive brands at unbeatable prices</p>
+              </div>
+            </div>
+            
+            <!-- Slide 5: Food Court -->
+            <div class="carousel-slide">
+              <img src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=1200&h=600&fit=crop" alt="Food Court">
+              <div class="carousel-caption">
+                <h3>Gourmet Dining</h3>
+                <p>Savor delicious cuisines from around the world</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Navigation Arrows -->
+          <button class="carousel-btn prev" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="carousel-btn next" onclick="changeSlide(1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        
+        <!-- Navigation Dots -->
+        <div class="carousel-dots" id="carouselDots">
+          <span class="dot active" onclick="goToSlide(0)"></span>
+          <span class="dot" onclick="goToSlide(1)"></span>
+          <span class="dot" onclick="goToSlide(2)"></span>
+          <span class="dot" onclick="goToSlide(3)"></span>
+          <span class="dot" onclick="goToSlide(4)"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact-section" class="py-5 bg-dark text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center mb-5">
+          <h2 class="section-title text-white">Contact Us</h2>
+          <p class="section-subtitle text-light">Get in touch with our team</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <h4><i class="fas fa-phone"></i> Phone Numbers</h4>
+          <p class="contact-info">
+            <i class="fas fa-phone-alt"></i> +91-74683709508<br>
+            <i class="fas fa-phone-alt"></i> +91-7369875298
+          </p>
+          <h4><i class="fas fa-envelope"></i> Email</h4>
+          <p class="contact-info">
+            <i class="fas fa-envelope"></i> info@airportmanagement.com<br>
+            <i class="fas fa-envelope"></i> support@airportmanagement.com
+          </p>
+        </div>
+        <div class="col-lg-6">
+          <h4><i class="fas fa-share-alt"></i> Follow Us</h4>
+          <div class="social-icons">
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+          </div>
+          <h4><i class="fas fa-clock"></i> Operating Hours</h4>
+          <p class="contact-info">
+            <i class="fas fa-clock"></i> 24/7 Customer Support<br>
+            <i class="fas fa-plane"></i> Flight Operations: 6:00 AM - 11:00 PM
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-secondary text-white py-3">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <p>&copy; 2024 Airport Management System. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="snackbar.js"></script>
+  <script src="Frontpage.js?v=2.8"></script>
+
+</body>
+
+
+</html>

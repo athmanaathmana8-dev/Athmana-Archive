@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Status Checker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <link rel="stylesheet" href="css/Ticketbooking.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3><i class="fas fa-search"></i> Check Booking Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="statusForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="booking_reference">Booking Reference</label>
+                                        <input type="text" class="form-control" id="booking_reference" 
+                                               placeholder="Enter your booking reference" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="last_name">Name</label>
+                                        <input type="text" class="form-control" id="last_name" 
+                                               placeholder="Enter your name" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-search"></i> Check Status
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div id="statusResult" class="mt-4" style="display: none;">
+                            <!-- Status results will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="Frontpage.html" class="btn btn-secondary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    <a href="Ticketbooking.html" class="btn btn-primary">
+                        <i class="fas fa-ticket-alt"></i> Book New Ticket
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('statusForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            checkBookingStatus();
+        });
+
+        function checkBookingStatus() {
+            const bookingRef = document.getElementById('booking_reference').value;
+            const lastName = document.getElementById('last_name').value;
+            
+            if (!bookingRef || !lastName) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Show loading
+            const resultDiv = document.getElementById('statusResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Checking booking status...</div>';
+            
+            // Make API call
+            fetch('api/check_booking_status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    booking_reference: bookingRef,
+                    last_name: lastName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayBookingStatus(data);
+                } else {
+                    displayError(data.error || 'Booking not found');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                displayError('An error occurred while checking booking status. Please try again.');
+            });
+        }
+
+        function displayError(message) {
+            const resultDiv = document.getElementById('statusResult');
+            
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-circle"></i> Booking Not Found</h5>
+                    <p>${message}</p>
+                    <hr>
+                    <p class="mb-0"><small>Please double-check your booking reference and name.</small></p>
+                </div>
+            `;
+        }
+
+        function displayBookingStatus(data) {
+            const resultDiv = document.getElementById('statusResult');
+            const bookings = data.bookings || [data.booking];
+            const booking = data.booking || data;
+            const isRoundTrip = bookings.length > 1;
+            
+            let statusClass = 'success';
+            let statusIcon = 'check-circle';
+            let statusText = booking.status || 'Confirmed';
+            
+            if (statusText === 'Cancelled') {
+                statusClass = 'danger';
+                statusIcon = 'times-circle';
+            } else if (statusText === 'Pending') {
+                statusClass = 'warning';
+                statusIcon = 'clock';
+            }
+            
+            let html = `
+                <div class="card shadow-sm">
+                    <div class="card-header bg-${statusClass} text-white">
+                        <h5><i class="fas fa-${statusIcon}"></i> Booking Status: ${statusText}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="mb-3"><i class="fas fa-user text-primary"></i> Passenger Details</h6>
+                                <p><strong>Name:</strong> ${booking.passenger_name || 'N/A'}</p>
+                                <p><strong>Email:</strong> ${booking.email || 'N/A'}</p>
+                                <p><strong>Phone:</strong> ${booking.phone || 'N/A'}</p>
+                                ${booking.date_of_birth ? `<p><strong>Date of Birth:</strong> ${booking.date_of_birth}</p>` : ''}
+                                ${booking.city ? `<p><strong>City:</strong> ${booking.city}</p>` : ''}
+                                <hr>
+                                <p><strong>Booking Reference:</strong> <code style="background: #f8f9fa; padding: 5px 10px; border-radius: 4px; font-size: 1.1em;">${booking.booking_reference || 'N/A'}</code></p>
+                            </div>
+                        </div>
+                        <hr>`;
+            
+            // Display each flight
+            bookings.forEach((flight, index) => {
+                const flightType = index === 0 ? 'Outbound' : 'Return';
+                const flightIcon = index === 0 ? 'fa-plane-departure' : 'fa-plane-arrival';
+                
+                const formattedDate = flight.departure_date !== 'N/A' && flight.departure_date ? 
+                    new Date(flight.departure_date).toLocaleDateString('en-IN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) : 'N/A';
+                
+                const timeDisplay = flight.departure_time && flight.arrival_time ? 
+                    `${flight.departure_time.substring(0,5)} - ${flight.arrival_time.substring(0,5)}` : 
+                    'Not available';
+                
+                const route = flight.from && flight.to ? `${flight.from} → ${flight.to}` : 'N/A';
+                const flightInfo = flight.flight_company && flight.flight_number ? 
+                    `${flight.flight_company} ${flight.flight_number}` : 
+                    (flight.flight_number || 'N/A');
+                
+                html += `
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <h6 class="mb-3"><i class="fas ${flightIcon} text-primary"></i> ${flightType} Flight Details</h6>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Flight:</strong> ${flightInfo}</p>
+                                <p><strong>Route:</strong> ${route}</p>
+                                <p><strong>Date:</strong> ${formattedDate}</p>
+                                <p><strong>Time:</strong> ${timeDisplay}</p>
+                                <p><strong>Ticket Number:</strong> <code style="background: #f8f9fa; padding: 5px 10px; border-radius: 4px;">${flight.ticket_number || 'N/A'}</code></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Seat:</strong> <span class="badge badge-secondary" style="font-size: 1em; padding: 8px 12px;">${flight.seat_number || 'N/A'}</span></p>
+                                <p><strong>Class:</strong> <span class="badge badge-info" style="font-size: 1em; padding: 8px 12px;">${flight.class || 'N/A'}</span></p>
+                                <p><strong>Price:</strong> <span style="font-size: 1.2em; font-weight: bold; color: #28a745;">₹${flight.price || '0.00'}</span></p>
+                                <p><strong>Status:</strong> <span class="badge badge-${statusClass}" style="font-size: 1em; padding: 8px 12px;">${statusText}</span></p>
+                            </div>
+                        </div>
+                        ${index < bookings.length - 1 ? '<hr>' : ''}`;
+            });
+            
+            // Add total if round trip
+            if (isRoundTrip && bookings.length === 2) {
+                const totalPrice = parseFloat(bookings[0].price.replace(/,/g, '')) + parseFloat(bookings[1].price.replace(/,/g, ''));
+                html += `
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <h6 class="mb-3"><i class="fas fa-rupee-sign text-primary"></i> Total Amount</h6>
+                                <p style="font-size: 24px; font-weight: bold; color: #28a745;">₹${totalPrice.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                            </div>
+                        </div>`;
+            }
+            
+            html += `
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="mb-3"><i class="fas fa-info-circle text-primary"></i> Additional Info</h6>
+                                <p><small class="text-muted">${statusText === 'Paid' || statusText === 'Confirmed' ? 'This booking is confirmed and ready for travel.' : 'Please check the booking status.'}</small></p>
+                                ${booking.p_id ? `<p><small class="text-muted"><strong>Passenger ID:</strong> ${booking.p_id}</small></p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            
+            resultDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

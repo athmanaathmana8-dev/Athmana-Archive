@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Fix - Search Results on Same Page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .fix-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .step h2 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .step h3 {
+            margin-bottom: 20px;
+        }
+        .big-btn {
+            display: inline-block;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            margin: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .big-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 5px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .checklist {
+            text-align: left;
+            font-size: 18px;
+            line-height: 2;
+        }
+        .checklist i {
+            color: #28a745;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="fix-container">
+        <h1><i class="fas fa-tools"></i> Quick Fix Guide</h1>
+        
+        <div class="warning-box">
+            <h4><i class="fas fa-exclamation-triangle"></i> Problem Detected:</h4>
+            <p><strong>Your search button is stuck on "SEARCHING..."</strong></p>
+            <p>This happens because you're searching for <strong>Kolkata → Bangalore</strong> but those flights don't exist in your database yet.</p>
+        </div>
+
+        <div class="step">
+            <h2>🎯</h2>
+            <h3>THE FIX</h3>
+            <p style="font-size:20px;">Click the button below to add ALL flight routes (including Kolkata → Bangalore)</p>
+            <a href="add_complete_network.php" class="big-btn">
+                <i class="fas fa-database"></i> ADD FLIGHTS NOW
+            </a>
+        </div>
+
+        <div class="info-box">
+            <h4><i class="fas fa-info-circle"></i> What This Will Do:</h4>
+            <div class="checklist">
+                <p><i class="fas fa-check-circle"></i> Add <strong>Kolkata ↔ Bangalore</strong> flights (4 flights each way)</p>
+                <p><i class="fas fa-check-circle"></i> Add Chennai ↔ Jaipur flights</p>
+                <p><i class="fas fa-check-circle"></i> Add Delhi ↔ Mumbai flights</p>
+                <p><i class="fas fa-check-circle"></i> Add 50+ more flight routes</p>
+                <p><i class="fas fa-check-circle"></i> Create seats for all flights automatically</p>
+            </div>
+        </div>
+
+        <hr style="margin: 40px 0;">
+
+        <h2 style="text-align:center; color:#2c3e50; margin-bottom:30px;">How Results Will Appear</h2>
+        
+        <div class="info-box">
+            <h4><i class="fas fa-magic"></i> After Adding Flights:</h4>
+            <ol style="font-size:18px; line-height:2;">
+                <li>Go to the <strong>Home Page</strong></li>
+                <li>Search for <strong>Kolkata → Bangalore</strong></li>
+                <li>Click <strong>"Search Flights"</strong></li>
+                <li><strong>Results appear BELOW the search form</strong> on the SAME PAGE!</li>
+                <li>You'll see beautiful flight cards with:
+                    <ul>
+                        <li>Flight company & number</li>
+                        <li>Departure & arrival times</li>
+                        <li>Prices (Economy, Business, First class)</li>
+                        <li>Available seats</li>
+                        <li>"Book Now" button for each flight</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="warning-box">
+            <h4><i class="fas fa-laptop-code"></i> Debugging (If Needed):</h4>
+            <p><strong>Press F12</strong> in your browser to open Developer Tools</p>
+            <p>Go to <strong>Console</strong> tab and look for:</p>
+            <ul>
+                <li>✅ "Search form found, attaching submit listener"</li>
+                <li>✅ "Form submitted, starting search..."</li>
+                <li>✅ "API Response Status: 200"</li>
+                <li>✅ "Flights to display: 4"</li>
+            </ul>
+            <p>If you see red errors, copy them and check what's wrong.</p>
+        </div>
+
+        <hr style="margin: 40px 0;">
+
+        <div style="text-align:center;">
+            <h3>Ready to Fix?</h3>
+            <a href="add_complete_network.php" class="big-btn">
+                <i class="fas fa-rocket"></i> STEP 1: ADD FLIGHTS
+            </a>
+            <br>
+            <a href="Frontpage.html" class="big-btn" style="background:#007bff;">
+                <i class="fas fa-home"></i> STEP 2: GO TO HOME PAGE
+            </a>
+        </div>
+
+        <div style="background:#d4edda;border-left:5px solid #28a745;padding:20px;margin-top:30px;border-radius:10px;">
+            <h4 style="color:#155724;"><i class="fas fa-check-circle"></i> What You'll Get:</h4>
+            <p style="color:#155724;font-size:18px;margin:0;"><strong>Search results will display ON THE SAME HOME PAGE - NO REDIRECTS!</strong></p>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

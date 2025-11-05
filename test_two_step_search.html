@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Two-Step Search</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <style>
+        body {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .log-box {
+            background: #2d2d2d;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+        .log-error {
+            color: #ff0000;
+            border-left-color: #ff0000;
+        }
+        .log-success {
+            color: #00ff00;
+            border-left-color: #00ff00;
+        }
+        .log-info {
+            color: #00bfff;
+            border-left-color: #00bfff;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-pending {
+            background: #ffc107;
+        }
+        .status-success {
+            background: #28a745;
+        }
+        .status-error {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-center mb-4"><i class="fas fa-bug"></i> Two-Step Search Tester</h1>
+        
+        <div class="alert alert-info">
+            <strong><i class="fas fa-info-circle"></i> This page tests your two-step search functionality</strong>
+            <p class="mb-0">Follow the steps below and watch the logs to see what's happening</p>
+        </div>
+
+        <!-- Search Form -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-search"></i> Step 1: Search for Flights</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>FROM</label>
+                            <select class="form-control" id="test_from">
+                                <option value="">Select</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Chennai">Chennai</option>
+                                <option value="Kolkata">Kolkata</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>TO</label>
+                            <select class="form-control" id="test_to">
+                                <option value="">Select</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Chennai">Chennai</option>
+                                <option value="Ahmedabad">Ahmedabad</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>DATE</label>
+                            <input type="date" class="form-control" id="test_date">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-lg btn-block" onclick="testSearch()">
+                    <i class="fas fa-search"></i> SEARCH
+                </button>
+                <div id="search-status" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Display Results -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-plane"></i> Step 2: Display Stored Flights</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-success btn-lg btn-block" onclick="testDisplay()">
+                    <i class="fas fa-plane"></i> AVAILABLE FLIGHTS
+                </button>
+                <div id="display-status" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-terminal"></i> Console Log</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="log-box" id="console-log">
+                    <div class="log-entry log-info">Ready to test...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Display -->
+        <div id="results-display" class="mt-4"></div>
+
+        <div class="text-center mt-4">
+            <a href="Frontpage.html" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go to Actual Page
+            </a>
+            <button class="btn btn-secondary" onclick="clearLogs()">
+                <i class="fas fa-eraser"></i> Clear Logs
+            </button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        // Set today's date
+        document.getElementById('test_date').value = new Date().toISOString().split('T')[0];
+
+        // Global storage (simulating the main page)
+        let storedFlights = [];
+        let searchParams = {};
+
+        function log(message, type = 'info') {
+            const logBox = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('console-log').innerHTML = '<div class="log-entry log-info">Logs cleared. Ready to test...</div>';
+        }
+
+        async function testSearch() {
+            log('🔍 Starting search test...', 'info');
+            
+            const from = document.getElementById('test_from').value;
+            const to = document.getElementById('test_to').value;
+            const date = document.getElementById('test_date').value;
+
+            const statusDiv = document.getElementById('search-status');
+
+            // Validate
+            if (!from || !to || !date) {
+                log('❌ Validation failed: Missing fields', 'error');
+                statusDiv.innerHTML = '<div class="alert alert-danger">Please fill all fields</div>';
+                return;
+            }
+
+            if (from === to) {
+                log('❌ Validation failed: Same origin and destination', 'error');
+                statusDiv.innerHTML = '<div class="alert alert-danger">Origin and destination cannot be same</div>';
+                return;
+            }
+
+            log(`✅ Validation passed`, 'success');
+            log(`📍 FROM: ${from}, TO: ${to}, DATE: ${date}`, 'info');
+
+            searchParams = { from, to, date };
+
+            statusDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <span class="status-indicator status-pending"></span>
+                    Searching for flights...
+                </div>
+            `;
+
+            try {
+                log('📡 Sending request to search_flights.php...', 'info');
+                
+                const response = await fetch('search_flights.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ from, to, date })
+                });
+
+                log(`📡 Response status: ${response.status}`, 'info');
+
+                const text = await response.text();
+                log(`📄 Raw response received (${text.length} characters)`, 'info');
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                    log('✅ JSON parsed successfully', 'success');
+                } catch (e) {
+                    log(`❌ JSON parse error: ${e.message}`, 'error');
+                    throw new Error('Invalid JSON from server');
+                }
+
+                const flights = Array.isArray(data) ? data : (data.flights || []);
+                
+                // STORE THE DATA
+                storedFlights = flights;
+                log(`💾 Stored ${storedFlights.length} flights in memory`, 'success');
+
+                if (flights.length === 0) {
+                    log('⚠️ No flights found for this route', 'error');
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <span class="status-indicator status-error"></span>
+                            No flights found. <a href="add_complete_network.php">Add flights?</a>
+                        </div>
+                    `;
+                } else {
+                    log(`✅ Search complete! Found ${flights.length} flights`, 'success');
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <span class="status-indicator status-success"></span>
+                            <strong>Search Complete!</strong><br>
+                            Found ${flights.length} flight(s)<br>
+                            <small>Now click "AVAILABLE FLIGHTS" to display them</small>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                statusDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <span class="status-indicator status-error"></span>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function testDisplay() {
+            log('📋 Attempting to display stored flights...', 'info');
+            
+            const statusDiv = document.getElementById('display-status');
+            const resultsDiv = document.getElementById('results-display');
+
+            if (!storedFlights || storedFlights.length === 0) {
+                log('❌ No stored flights found', 'error');
+                statusDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <span class="status-indicator status-error"></span>
+                        No stored flights. Please click SEARCH first!
+                    </div>
+                `;
+                resultsDiv.innerHTML = '';
+                return;
+            }
+
+            log(`✅ Found ${storedFlights.length} stored flights`, 'success');
+            log('🎨 Rendering flight cards...', 'info');
+
+            statusDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <span class="status-indicator status-success"></span>
+                    Displaying ${storedFlights.length} flight(s)
+                </div>
+            `;
+
+            let html = `<h3 class="mt-4 mb-3">Flight Results: ${searchParams.from} → ${searchParams.to}</h3>`;
+
+            storedFlights.forEach((flight, index) => {
+                const depTime = flight.departing_time ? flight.departing_time.substring(0, 5) : 'N/A';
+                const arrTime = flight.arrival_time ? flight.arrival_time.substring(0, 5) : 'N/A';
+                
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <h5><i class="fas fa-plane"></i> ${flight.flight_company || 'Airline'}</h5>
+                                    <p class="text-muted mb-0">${flight.flight_number || 'N/A'}</p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <h4>${depTime} → ${arrTime}</h4>
+                                    <small>${flight.source} → ${flight.destination}</small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h4 class="text-success">₹${flight.price_economy || 'N/A'}</h4>
+                                    <small>${flight.no_of_seats || 0} seats</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-success btn-block">Select</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+            log(`✅ Successfully displayed ${storedFlights.length} flights`, 'success');
+        }
+    </script>
+</body>
+</html>
+

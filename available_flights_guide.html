@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Flights Button - User Guide</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .guide {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6c757d;
+            font-size: 20px;
+            margin-bottom: 40px;
+        }
+        .feature-box {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 5px solid #28a745;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .feature-box h3 {
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .comparison-box {
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .comparison-box.search {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid #007bff;
+        }
+        .comparison-box.available {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 5px solid #28a745;
+        }
+        .btn-demo {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        .btn-demo.primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        .btn-demo.success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+        }
+        .btn-demo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-decoration: none;
+            color: white;
+        }
+        .step-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .step-box h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .screenshot {
+            background: #f8f9fa;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="guide">
+        <h1><i class="fas fa-plane"></i> Available Flights Button</h1>
+        <p class="subtitle">Your complete guide to using the new Available Flights feature</p>
+
+        <div class="feature-box">
+            <h3><i class="fas fa-star"></i> What's New?</h3>
+            <p style="font-size: 18px; line-height: 1.8;">
+                I've added a new <strong>"Available Flights"</strong> button next to the Search button in the Quick Flight Search section. 
+                When you click it, you'll see <strong>ALL available flights</strong> from your database, beautifully organized by route, 
+                displayed right on the same page!
+            </p>
+        </div>
+
+        <h2 class="text-center mt-5 mb-4">Two Ways to Find Flights</h2>
+
+        <div class="comparison">
+            <div class="comparison-box search">
+                <h4><i class="fas fa-search"></i> Search Flights (Specific)</h4>
+                <p><strong>What it does:</strong></p>
+                <ul>
+                    <li>Searches for specific route</li>
+                    <li>Requires FROM, TO, and DATE</li>
+                    <li>Shows filtered results</li>
+                </ul>
+                <p><strong>Best for:</strong></p>
+                <ul>
+                    <li>When you know your route</li>
+                    <li>Planning a specific trip</li>
+                </ul>
+                <div class="text-center mt-3">
+                    <span class="btn-demo primary">
+                        <i class="fas fa-search"></i> SEARCH FLIGHTS
+                    </span>
+                </div>
+            </div>
+
+            <div class="comparison-box available">
+                <h4><i class="fas fa-plane"></i> Available Flights (All)</h4>
+                <p><strong>What it does:</strong></p>
+                <ul>
+                    <li>Shows ALL flights</li>
+                    <li>No form filling needed</li>
+                    <li>Grouped by route</li>
+                </ul>
+                <p><strong>Best for:</strong></p>
+                <ul>
+                    <li>Browsing all options</li>
+                    <li>Discovering new routes</li>
+                </ul>
+                <div class="text-center mt-3">
+                    <span class="btn-demo success">
+                        <i class="fas fa-plane"></i> AVAILABLE FLIGHTS
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <h2 class="text-center mb-4">How to Use</h2>
+
+        <div class="step-box">
+            <h4><span class="badge badge-primary badge-custom">Step 1</span> Add Flights to Database</h4>
+            <p>First, make sure you have flights in your database. You were searching for <strong>Goa → Pune</strong>, so let's add those:</p>
+            <a href="add_goa_pune_flights.php" class="btn-demo success">
+                <i class="fas fa-plus-circle"></i> Add Goa ↔ Pune Flights
+            </a>
+            <p class="mt-3"><small>This adds 8 flights (4 each direction) between Goa and Pune</small></p>
+        </div>
+
+        <div class="step-box">
+            <h4><span class="badge badge-primary badge-custom">Step 2</span> Go to Home Page</h4>
+            <p>Navigate to the home page and find the Quick Flight Search section:</p>
+            <a href="Frontpage.html" class="btn-demo primary">
+                <i class="fas fa-home"></i> Go to Home Page
+            </a>
+        </div>
+
+        <div class="step-box">
+            <h4><span class="badge badge-primary badge-custom">Step 3</span> Click "Available Flights"</h4>
+            <p>In the Quick Flight Search section, you'll now see TWO buttons:</p>
+            <div class="screenshot text-center">
+                <p style="font-size: 16px; margin-bottom: 20px;">Quick Flight Search Form</p>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <span class="btn-demo primary" style="width: 250px;">
+                        <i class="fas fa-search"></i> SEARCH FLIGHTS
+                    </span>
+                    <span class="btn-demo success" style="width: 250px;">
+                        <i class="fas fa-plane"></i> AVAILABLE FLIGHTS ← Click this!
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <h4><span class="badge badge-primary badge-custom">Step 4</span> View Results</h4>
+            <p>Results appear immediately BELOW the search section on the same page, grouped by route:</p>
+            <div class="screenshot">
+                <h5 style="color: #667eea;"><i class="fas fa-route"></i> Mumbai → Kolkata <span class="badge badge-info">4 flights</span></h5>
+                <div class="card mb-2" style="border: 2px solid #e9ecef;">
+                    <div class="card-body py-2">
+                        <small>
+                            <strong>IndiGo 6E151M</strong> | 08:00 → 10:30 | <strong class="text-success">₹11,000</strong>
+                            <button class="btn btn-sm btn-success float-right">Select Flight</button>
+                        </small>
+                    </div>
+                </div>
+                <div class="card mb-2" style="border: 2px solid #e9ecef;">
+                    <div class="card-body py-2">
+                        <small>
+                            <strong>Air India AI251M</strong> | 12:00 → 14:30 | <strong class="text-success">₹11,500</strong>
+                            <button class="btn btn-sm btn-success float-right">Select Flight</button>
+                        </small>
+                    </div>
+                </div>
+                <p class="text-center mt-2"><em>...and more routes</em></p>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <h4><span class="badge badge-primary badge-custom">Step 5</span> Select a Flight</h4>
+            <p>Click <strong>"Select Flight"</strong> on any flight to proceed to booking with that flight pre-selected.</p>
+        </div>
+
+        <hr class="my-5">
+
+        <div class="highlight">
+            <h4><i class="fas fa-lightbulb"></i> Pro Tips</h4>
+            <ul style="font-size: 16px; line-height: 2;">
+                <li>✨ <strong>No form filling required</strong> - Just click and see all flights</li>
+                <li>✨ <strong>Grouped by route</strong> - Easy to compare flights on the same route</li>
+                <li>✨ <strong>View details</strong> - Expand each flight to see all class prices</li>
+                <li>✨ <strong>One-click select</strong> - Choose your flight and go directly to booking</li>
+                <li>✨ <strong>Always on same page</strong> - No redirects, everything loads instantly</li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h3><i class="fas fa-question-circle"></i> Troubleshooting</h3>
+            <p><strong>If you see "No Flights Available":</strong></p>
+            <ol>
+                <li>Make sure you added flights to the database (Step 1)</li>
+                <li>Check that XAMPP Apache & MySQL are running</li>
+                <li>Press F12, check Console tab for errors</li>
+            </ol>
+            <p><strong>If the button doesn't respond:</strong></p>
+            <ol>
+                <li>Press <strong>Ctrl + Shift + R</strong> to hard refresh</li>
+                <li>Clear your browser cache</li>
+                <li>Make sure JavaScript is enabled</li>
+            </ol>
+        </div>
+
+        <hr class="my-5">
+
+        <div class="text-center">
+            <h3 class="mb-4">Ready to Try?</h3>
+            <a href="add_goa_pune_flights.php" class="btn-demo success">
+                <i class="fas fa-database"></i> Add Flights First
+            </a>
+            <a href="Frontpage.html" class="btn-demo primary">
+                <i class="fas fa-home"></i> Try It Now
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -93,10 +93,15 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Booking status response:', data);
                 if (data.success) {
                     displayBookingStatus(data);
                 } else {
-                    displayError(data.error || 'Booking not found');
+                    let errorMsg = data.error || 'Booking not found';
+                    if (data.hint) {
+                        errorMsg += '\n\n' + data.hint;
+                    }
+                    displayError(errorMsg);
                 }
             })
             .catch(error => {
@@ -126,17 +131,33 @@
             
             let statusClass = 'success';
             let statusIcon = 'check-circle';
-            let statusText = booking.status || 'Confirmed';
+            let statusText = booking.status || booking.payment_status || 'Confirmed';
             
-            if (statusText === 'Cancelled') {
+            // Determine status display
+            if (statusText === 'Cancelled' || statusText === 'Refunded') {
                 statusClass = 'danger';
                 statusIcon = 'times-circle';
-            } else if (statusText === 'Pending') {
+            } else if (statusText === 'Pending' || statusText === 'Failed') {
                 statusClass = 'warning';
                 statusIcon = 'clock';
+            } else if (statusText === 'Confirmed' || statusText === 'Paid') {
+                statusClass = 'success';
+                statusIcon = 'check-circle';
+                statusText = 'Confirmed'; // Always show as "Confirmed" for paid bookings
             }
             
-            let html = `
+            // Show summary message if multiple bookings or confirmed flights
+            let summaryHtml = '';
+            if (data.confirmed_count !== undefined && data.total_count !== undefined) {
+                if (data.confirmed_count > 0) {
+                    summaryHtml = `<div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle"></i> <strong>Confirmed Flights Found!</strong> 
+                        Found ${data.confirmed_count} confirmed flight(s) out of ${data.total_count} total booking(s).
+                    </div>`;
+                }
+            }
+            
+            let html = summaryHtml + `
                 <div class="card shadow-sm">
                     <div class="card-header bg-${statusClass} text-white">
                         <h5><i class="fas fa-${statusIcon}"></i> Booking Status: ${statusText}</h5>
@@ -194,7 +215,7 @@
                             <div class="col-md-6">
                                 <p><strong>Seat:</strong> <span class="badge badge-secondary" style="font-size: 1em; padding: 8px 12px;">${flight.seat_number || 'N/A'}</span></p>
                                 <p><strong>Class:</strong> <span class="badge badge-info" style="font-size: 1em; padding: 8px 12px;">${flight.class || 'N/A'}</span></p>
-                                <p><strong>Price:</strong> <span style="font-size: 1.2em; font-weight: bold; color: #28a745;">₹${flight.price || '0.00'}</span></p>
+                                <p><strong>Price:</strong> <span style="font-size: 1.2em; font-weight: bold; color: #28a745;">₹${flight.price_formatted || (typeof flight.price === 'number' ? flight.price.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : flight.price || '0.00')}</span></p>
                                 <p><strong>Status:</strong> <span class="badge badge-${statusClass}" style="font-size: 1em; padding: 8px 12px;">${statusText}</span></p>
                             </div>
                         </div>
@@ -203,7 +224,9 @@
             
             // Add total if round trip
             if (isRoundTrip && bookings.length === 2) {
-                const totalPrice = parseFloat(bookings[0].price.replace(/,/g, '')) + parseFloat(bookings[1].price.replace(/,/g, ''));
+                const price1 = typeof bookings[0].price === 'number' ? bookings[0].price : parseFloat(String(bookings[0].price || 0).replace(/,/g, ''));
+                const price2 = typeof bookings[1].price === 'number' ? bookings[1].price : parseFloat(String(bookings[1].price || 0).replace(/,/g, ''));
+                const totalPrice = price1 + price2;
                 html += `
                         <hr>
                         <div class="row">

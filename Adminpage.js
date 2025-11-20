@@ -384,27 +384,12 @@ function removeplanefunction() {
   }
 }
 
-// Toggle Add Flight Form
-function toggleAddForm() {
-  // Determine which section is currently visible
-  var homeSection = document.getElementById('home');
-  var flightsSection = document.getElementById('Flights');
-  
-  var formContainer = null;
+// Toggle Add Flight Form for home section
+function toggleAddFlightForm() {
+  var formContainer = document.getElementById('addFlightForm');
   var listContainer = document.getElementById('flightList');
   
-  // Check which section is visible and use the corresponding form
-  if (homeSection && homeSection.style.display !== 'none') {
-    formContainer = document.getElementById('addFlightFormHome');
-  } else if (flightsSection && flightsSection.style.display !== 'none') {
-    formContainer = document.getElementById('addFlightForm');
-  } else {
-    // Fallback: try to find any available form
-    formContainer = document.getElementById('addFlightForm') || document.getElementById('addFlightFormHome');
-  }
-  
   if (!formContainer) {
-    console.error('Form container not found');
     if (typeof showSnackbar !== 'undefined') {
       showSnackbar('Error: Form container not found. Please refresh the page.', 'error');
     } else {
@@ -431,10 +416,86 @@ function toggleAddForm() {
   }
 }
 
-// Confirm Remove Flight
+// Toggle Add Flight Form (legacy function for other sections)
+function toggleAddForm() {
+  // Determine which section is currently visible
+  var homeSection = document.getElementById('home');
+  var flightsSection = document.getElementById('Flights');
+  
+  var formContainer = null;
+  var listContainer = document.getElementById('flightList');
+  
+  // Check which section is visible and use the corresponding form
+  if (homeSection && homeSection.style.display !== 'none') {
+    formContainer = document.getElementById('addFlightForm');
+  } else if (flightsSection && flightsSection.style.display !== 'none') {
+    formContainer = document.getElementById('addFlightForm');
+  } else {
+    // Fallback: try to find any available form
+    formContainer = document.getElementById('addFlightForm');
+  }
+  
+  if (!formContainer) {
+    if (typeof showSnackbar !== 'undefined') {
+      showSnackbar('Error: Form container not found. Please refresh the page.', 'error');
+    } else {
+      alert('Error: Form container not found. Please refresh the page.');
+    }
+    return;
+  }
+  
+  // Toggle the show class for smooth animation
+  if (formContainer.classList.contains('show')) {
+    formContainer.classList.remove('show');
+    // Scroll to list view
+    setTimeout(function() {
+      if (listContainer) {
+        listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 200);
+  } else {
+    formContainer.classList.add('show');
+    // Scroll to form smoothly
+    setTimeout(function() {
+      formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+}
+
+// Confirm Remove Flight - Optimized for fast removal
 function confirmRemove(flightNumber) {
-  if (confirm('Are you sure you want to remove this flight?')) {
+  if (!flightNumber || flightNumber.trim() === '') {
+    alert('Error: Flight number is missing');
+    return;
+  }
+  
+  // Trim whitespace from flight number
+  flightNumber = flightNumber.trim();
+  
+  if (confirm('Are you sure you want to remove flight ' + flightNumber + '?')) {
     console.log('Attempting to delete flight:', flightNumber);
+    
+    // Optimistic UI update - remove row immediately for instant feedback
+    var tableBodies = ['#homeFlightTableBody', '#flightTableBody'];
+    var removedRows = [];
+    
+    tableBodies.forEach(function(tableBodyId) {
+      var tableBody = document.querySelector(tableBodyId);
+      if (tableBody) {
+        var rows = tableBody.querySelectorAll('tr');
+        for (var i = 0; i < rows.length; i++) {
+          var firstCell = rows[i].querySelector('td strong');
+          if (firstCell && firstCell.textContent.trim() === flightNumber) {
+            // Fast fade out
+            rows[i].style.transition = 'opacity 0.2s, transform 0.2s';
+            rows[i].style.opacity = '0';
+            rows[i].style.transform = 'translateX(-20px)';
+            removedRows.push({row: rows[i], tableBody: tableBody});
+            break;
+          }
+        }
+      }
+    });
     
     // Send AJAX request to delete the flight
     var xhr = new XMLHttpRequest();
@@ -444,49 +505,62 @@ function confirmRemove(flightNumber) {
     
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
-        console.log('Response status:', xhr.status);
-        console.log('Response text:', xhr.responseText);
-        
         if (xhr.status === 200) {
           var response = xhr.responseText.trim();
           
           // Check if deletion was successful
           if (response === 'SUCCESS' || response.indexOf('SUCCESS') !== -1) {
-            console.log('Deletion successful, removing row');
-            // Remove the row from the table
-            var rows = document.querySelectorAll('#flightTableBody tr');
-            for (var i = 0; i < rows.length; i++) {
-              var firstCell = rows[i].querySelector('td strong');
-              if (firstCell && firstCell.textContent === flightNumber) {
-                rows[i].style.animation = 'fadeOut 0.5s ease-out';
-                setTimeout(function(row) {
-                  row.remove();
-                  // Check if table is empty
-                  var remainingRows = document.querySelectorAll('#flightTableBody tr');
-                  if (remainingRows.length === 0) {
-                    document.getElementById('flightTableBody').innerHTML = 
-                      '<tr><td colspan="8" class="no-data">No flights found. Click \'Add New Flight\' to add one.</td></tr>';
-                  }
-                }, 500, rows[i]);
-                break;
+            console.log('Deletion successful');
+            
+            // Remove rows from DOM after animation
+            setTimeout(function() {
+              removedRows.forEach(function(item) {
+                item.row.remove();
+                // Check if table is empty
+                var remainingRows = item.tableBody.querySelectorAll('tr');
+                if (remainingRows.length === 0) {
+                  item.tableBody.innerHTML = 
+                    '<tr><td colspan="11" class="no-data">No flights found. Click \'Add New Flight\' to add one.</td></tr>';
+                }
+              });
+              
+              // Reinitialize pagination if needed
+              if (typeof initHomePagination !== 'undefined') {
+                initHomePagination();
               }
-            }
+              if (typeof initPagination !== 'undefined') {
+                initPagination();
+              }
+            }, 250);
+            
+            // Quick success message
             if (typeof showSnackbar !== 'undefined') {
-              showSnackbar('Flight removed successfully!', 'success');
-            } else {
-              alert('Flight removed successfully!');
+              showSnackbar('Flight removed!', 'success', 2000);
             }
           } else {
+            // Error - restore rows
             console.error('Delete failed. Response:', response);
+            removedRows.forEach(function(item) {
+              item.row.style.opacity = '1';
+              item.row.style.transform = 'translateX(0)';
+            });
+            
+            var errorMsg = response.replace('ERROR: ', '');
             if (typeof showSnackbar !== 'undefined') {
-              showSnackbar('Error: Could not remove flight. Please try again. Details: ' + response, 'error', 6000);
+              showSnackbar('Error: ' + errorMsg, 'error', 4000);
             } else {
-              alert('Error: Could not remove flight. Please try again.\n\nDetails: ' + response);
+              alert('Error: Could not remove flight.\n\n' + errorMsg);
             }
           }
         } else {
+          // Error - restore rows
+          removedRows.forEach(function(item) {
+            item.row.style.opacity = '1';
+            item.row.style.transform = 'translateX(0)';
+          });
+          
           if (typeof showSnackbar !== 'undefined') {
-            showSnackbar('Error: Server request failed. Status: ' + xhr.status, 'error');
+            showSnackbar('Error: Server request failed', 'error');
           } else {
             alert('Error: Server request failed. Status: ' + xhr.status);
           }
@@ -494,7 +568,9 @@ function confirmRemove(flightNumber) {
       }
     };
     
-    xhr.send('flight_number=' + encodeURIComponent(flightNumber) + '&save2=Remove');
+    // Send the request with properly encoded flight number
+    var params = 'flight_number=' + encodeURIComponent(flightNumber) + '&save2=Remove';
+    xhr.send(params);
   }
 }
 
@@ -646,91 +722,6 @@ function updatePaginationInfo() {
   }
 }
 
-// Pagination system for Home section
-var currentPageHome = 1;
-var itemsPerPageHome = 10;
-
-// Initialize pagination for home section
-function initPaginationHome() {
-  var tableBody = document.getElementById('flightTableBodyHome');
-  if (!tableBody) return;
-  
-  var allRows = tableBody.getElementsByTagName('tr');
-  var totalRows = allRows.length;
-  
-  // Calculate total pages
-  var totalPages = Math.ceil(totalRows / itemsPerPageHome);
-  
-  // Store total pages globally
-  window.totalPagesHome = totalPages;
-  
-  // Update page info
-  updatePaginationInfoHome();
-  
-  // Show first page
-  showPageHome(1);
-}
-
-// Show specific page for home section
-function showPageHome(page) {
-  var tableBody = document.getElementById('flightTableBodyHome');
-  if (!tableBody) return;
-  
-  var allRows = tableBody.getElementsByTagName('tr');
-  var startIndex = (page - 1) * itemsPerPageHome;
-  var endIndex = startIndex + itemsPerPageHome;
-  
-  // Hide all rows first
-  for (var i = 0; i < allRows.length; i++) {
-    allRows[i].style.display = 'none';
-  }
-  
-  // Show rows for current page
-  for (var i = startIndex; i < endIndex && i < allRows.length; i++) {
-    if (allRows[i].dataset.userHidden !== 'true') {
-      allRows[i].style.display = '';
-      allRows[i].style.animation = 'fadeIn 0.3s ease-in';
-    }
-  }
-  
-  // Update current page
-  currentPageHome = page;
-  updatePaginationInfoHome();
-  
-  // Enable/disable navigation buttons
-  var prevBtn = document.getElementById('prevBtnHome');
-  var nextBtn = document.getElementById('nextBtnHome');
-  
-  if (prevBtn) {
-    prevBtn.disabled = (currentPageHome === 1);
-  }
-  if (nextBtn) {
-    nextBtn.disabled = (currentPageHome >= window.totalPagesHome);
-  }
-}
-
-// Change page for home section (direction: -1 for previous, 1 for next)
-function changePageHome(direction) {
-  var newPage = currentPageHome + direction;
-  
-  if (newPage < 1) {
-    newPage = 1;
-  } else if (newPage > window.totalPagesHome) {
-    newPage = window.totalPagesHome;
-  }
-  
-  if (newPage !== currentPageHome) {
-    showPageHome(newPage);
-  }
-}
-
-// Update pagination info display for home section
-function updatePaginationInfoHome() {
-  var pageInfo = document.getElementById('pageInfoHome');
-  if (pageInfo && window.totalPagesHome) {
-    pageInfo.textContent = 'Page ' + currentPageHome + ' of ' + window.totalPagesHome;
-  }
-}
 
 
 
@@ -769,69 +760,105 @@ function toggleAddEmployeeForm() {
 
 // Confirm Remove Employee
 function confirmRemoveEmployee(empId) {
-  if (confirm('Are you sure you want to remove this employee?')) {
-    console.log('Attempting to delete employee:', empId);
-    
-    // Send AJAX request to delete the employee
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'Adminpagephp.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-        console.log('Response status:', xhr.status);
-        console.log('Response text:', xhr.responseText);
+  if (!empId || empId.trim() === '') {
+    if (typeof showSnackbar !== 'undefined') {
+      showSnackbar('Invalid employee ID', 'error');
+    } else {
+      alert('Invalid employee ID');
+    }
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to remove employee ' + empId + '?')) {
+    return;
+  }
+  
+  console.log('Attempting to delete employee:', empId);
+  
+  // Optimistic UI update - remove row immediately for instant feedback
+  var tableBody = document.getElementById('employeeTableBody');
+  var removedRow = null;
+  
+  if (tableBody) {
+    var rows = tableBody.getElementsByTagName('tr');
+    for (var i = 0; i < rows.length; i++) {
+      var firstCell = rows[i].querySelector('td strong');
+      if (firstCell && firstCell.textContent.trim() === empId) {
+        removedRow = rows[i];
+        removedRow.style.transition = 'opacity 0.2s, transform 0.2s';
+        removedRow.style.opacity = '0';
+        removedRow.style.transform = 'translateX(-20px)';
+        break;
+      }
+    }
+  }
+  
+  // Send AJAX request to delete the employee
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'Adminpagephp.php', true);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var response = xhr.responseText.trim();
         
-        if (xhr.status === 200) {
-          var response = xhr.responseText.trim();
-          
-          // Check if deletion was successful
-          if (response === 'SUCCESS' || response.indexOf('SUCCESS') !== -1) {
-            console.log('Deletion successful, removing row');
-            // Remove the row from the table
-            var rows = document.querySelectorAll('#employeeTableBody tr');
-            for (var i = 0; i < rows.length; i++) {
-              var firstCell = rows[i].querySelector('td strong');
-              if (firstCell && firstCell.textContent === empId) {
-                rows[i].style.animation = 'fadeOut 0.5s ease-out';
-                setTimeout(function(row) {
-                  row.remove();
-                  // Check if table is empty
-                  var remainingRows = document.querySelectorAll('#employeeTableBody tr');
-                  if (remainingRows.length === 0) {
-                    document.getElementById('employeeTableBody').innerHTML = 
-                      '<tr><td colspan="6" class="no-data">No employees found. Click \'Add New Employee\' to add one.</td></tr>';
-                  }
-                }, 500, rows[i]);
-                break;
+        // Check if deletion was successful
+        if (response === 'SUCCESS' || response.indexOf('SUCCESS') !== -1) {
+          // Remove row from DOM after animation
+          if (removedRow) {
+            setTimeout(function() {
+              removedRow.remove();
+              // Check if table is empty
+              var remainingRows = tableBody.getElementsByTagName('tr');
+              if (remainingRows.length === 0) {
+                tableBody.innerHTML = 
+                  '<tr><td colspan="6" class="no-data">No employees found. Click \'Add New Employee\' to add one.</td></tr>';
               }
-            }
-            if (typeof showSnackbar !== 'undefined') {
-              showSnackbar('Employee removed successfully!', 'success');
-            } else {
-              alert('Employee removed successfully!');
-            }
+              // Reinitialize pagination if needed
+              if (typeof initEmpPagination !== 'undefined') {
+                initEmpPagination();
+              }
+            }, 250);
+          }
+          
+          if (typeof showSnackbar !== 'undefined') {
+            showSnackbar('Employee removed successfully!', 'success');
           } else {
-            console.error('Delete failed. Response:', response);
-            if (typeof showSnackbar !== 'undefined') {
-              showSnackbar('Error: Could not remove employee. Please try again. Details: ' + response, 'error', 6000);
-            } else {
-              alert('Error: Could not remove employee. Please try again.\n\nDetails: ' + response);
-            }
+            alert('Employee removed successfully!');
           }
         } else {
+          // Error - restore row
+          if (removedRow) {
+            removedRow.style.opacity = '1';
+            removedRow.style.transform = 'translateX(0)';
+          }
+          
+          console.error('Delete failed. Response:', response);
           if (typeof showSnackbar !== 'undefined') {
-            showSnackbar('Error: Server request failed. Status: ' + xhr.status, 'error');
+            showSnackbar('Error: Could not remove employee. Please try again. Details: ' + response, 'error', 6000);
           } else {
-            alert('Error: Server request failed. Status: ' + xhr.status);
+            alert('Error: Could not remove employee. Please try again.\n\nDetails: ' + response);
           }
         }
+      } else {
+        // Server error - restore row
+        if (removedRow) {
+          removedRow.style.opacity = '1';
+          removedRow.style.transform = 'translateX(0)';
+        }
+        
+        if (typeof showSnackbar !== 'undefined') {
+          showSnackbar('Error: Server request failed. Status: ' + xhr.status, 'error');
+        } else {
+          alert('Error: Server request failed. Status: ' + xhr.status);
+        }
       }
-    };
-    
-    xhr.send('emp_id=' + encodeURIComponent(empId) + '&save3=Remove');
-  }
+    }
+  };
+  
+  xhr.send('emp_id=' + encodeURIComponent(empId) + '&save3=Remove');
 }
 
 // Toggle Select All Flights
@@ -1201,20 +1228,32 @@ function initEmpPagination() {
   var tableBody = document.getElementById('employeeTableBody');
   if (!tableBody) return;
   
-  var allRows = tableBody.getElementsByTagName('tr');
-  var totalRows = allRows.length;
+  var allRows = Array.from(tableBody.getElementsByTagName('tr'));
   
-  // Calculate total pages
+  // Filter out "no-data" and "error" rows
+  var dataRows = allRows.filter(function(row) {
+    var firstCell = row.querySelector('td');
+    if (!firstCell) return false;
+    var cellClass = firstCell.className || '';
+    return cellClass.indexOf('no-data') === -1 && cellClass.indexOf('error') === -1;
+  });
+  
+  var totalRows = dataRows.length;
   var totalPages = Math.ceil(totalRows / empItemsPerPage);
   
   // Store total pages globally
-  window.totalEmpPages = totalPages;
+  window.totalEmpPages = totalPages || 1;
+  
+  // Initialize current page if not set
+  if (typeof currentEmpPage === 'undefined') {
+    currentEmpPage = 1;
+  }
   
   // Update page info
   updateEmpPaginationInfo();
   
   // Show first page
-  showEmpPage(1);
+  showEmpPage(currentEmpPage);
 }
 
 // Show specific employee page
@@ -1222,19 +1261,43 @@ function showEmpPage(page) {
   var tableBody = document.getElementById('employeeTableBody');
   if (!tableBody) return;
   
-  var allRows = tableBody.getElementsByTagName('tr');
+  var allRows = Array.from(tableBody.getElementsByTagName('tr'));
+  
+  // Filter out "no-data" and "error" rows
+  var dataRows = allRows.filter(function(row) {
+    var firstCell = row.querySelector('td');
+    if (!firstCell) return false;
+    var cellClass = firstCell.className || '';
+    return cellClass.indexOf('no-data') === -1 && cellClass.indexOf('error') === -1;
+  });
+  
+  var totalRows = dataRows.length;
+  var totalPages = Math.ceil(totalRows / empItemsPerPage);
+  window.totalEmpPages = totalPages || 1;
+  
+  // Hide all rows first
+  allRows.forEach(function(row) {
+    row.style.display = 'none';
+  });
+  
+  // Show rows for current page
   var startIndex = (page - 1) * empItemsPerPage;
   var endIndex = startIndex + empItemsPerPage;
   
-  // Hide all rows first
-  for (var i = 0; i < allRows.length; i++) {
-    allRows[i].style.display = 'none';
+  for (var i = startIndex; i < endIndex && i < dataRows.length; i++) {
+    dataRows[i].style.display = '';
+    dataRows[i].style.animation = 'fadeIn 0.3s ease-in';
   }
   
-  // Show rows for current page
-  for (var i = startIndex; i < endIndex && i < allRows.length; i++) {
-    allRows[i].style.display = '';
-    allRows[i].style.animation = 'fadeIn 0.3s ease-in';
+  // If no data rows, show the "no-data" row if it exists
+  if (totalRows === 0) {
+    var noDataRow = allRows.find(function(row) {
+      var firstCell = row.querySelector('td');
+      return firstCell && (firstCell.className.indexOf('no-data') !== -1 || firstCell.className.indexOf('error') !== -1);
+    });
+    if (noDataRow) {
+      noDataRow.style.display = '';
+    }
   }
   
   // Update current page
@@ -1246,15 +1309,23 @@ function showEmpPage(page) {
   var nextBtn = document.getElementById('nextEmpBtn');
   
   if (prevBtn) {
-    prevBtn.disabled = (currentEmpPage === 1);
+    prevBtn.disabled = (currentEmpPage === 1 || totalPages <= 1);
   }
   if (nextBtn) {
-    nextBtn.disabled = (currentEmpPage >= window.totalEmpPages);
+    nextBtn.disabled = (currentEmpPage >= window.totalEmpPages || totalPages <= 1);
   }
 }
 
 // Change employee page (direction: -1 for previous, 1 for next)
-function changeEmpPage(direction) {
+// Make it globally accessible
+window.changeEmpPage = function(direction) {
+  if (typeof currentEmpPage === 'undefined') {
+    currentEmpPage = 1;
+  }
+  if (typeof window.totalEmpPages === 'undefined') {
+    window.totalEmpPages = 1;
+  }
+  
   var newPage = currentEmpPage + direction;
   
   if (newPage < 1) {
@@ -1263,9 +1334,14 @@ function changeEmpPage(direction) {
     newPage = window.totalEmpPages;
   }
   
-  if (newPage !== currentEmpPage) {
+  if (newPage !== currentEmpPage && newPage >= 1 && newPage <= window.totalEmpPages) {
     showEmpPage(newPage);
   }
+};
+
+// Also keep the regular function for backward compatibility
+function changeEmpPage(direction) {
+  return window.changeEmpPage(direction);
 }
 
 // Update employee pagination info display
@@ -1275,3 +1351,172 @@ function updateEmpPaginationInfo() {
     pageInfo.textContent = 'Page ' + currentEmpPage + ' of ' + window.totalEmpPages;
   }
 }
+
+// Home Page Pagination system
+var currentHomePage = 1;
+var homeItemsPerPage = 10;
+
+// Initialize home pagination on page load
+function initHomePagination() {
+  var tableBody = document.getElementById('homeFlightTableBody');
+  if (!tableBody) {
+    return;
+  }
+  
+  var allRows = tableBody.getElementsByTagName('tr');
+  
+  // Filter out "no data" and "error" rows
+  var dataRows = [];
+  for (var i = 0; i < allRows.length; i++) {
+    if (!allRows[i].classList.contains('no-data') && !allRows[i].classList.contains('error')) {
+      dataRows.push(allRows[i]);
+    }
+  }
+  
+  // Calculate total pages
+  var totalPages = Math.max(1, Math.ceil(dataRows.length / homeItemsPerPage));
+  
+  // Store total pages globally
+  window.totalHomePages = totalPages;
+  
+  // Update page info
+  updateHomePaginationInfo();
+  
+  // Show first page and update button states
+  showHomePage(1);
+  
+  // Ensure buttons are properly disabled on initialization
+  var prevBtn = document.getElementById('prevBtnHome');
+  var nextBtn = document.getElementById('nextBtnHome');
+  
+  if (prevBtn) {
+    prevBtn.disabled = (currentHomePage <= 1);
+  }
+  if (nextBtn) {
+    nextBtn.disabled = (currentHomePage >= window.totalHomePages || window.totalHomePages <= 1);
+  }
+}
+
+// Show specific home page
+function showHomePage(page) {
+  var tableBody = document.getElementById('homeFlightTableBody');
+  if (!tableBody) {
+    return;
+  }
+  
+  var allRows = tableBody.getElementsByTagName('tr');
+  var dataRows = [];
+  
+  // Filter out "no data" and "error" rows
+  for (var i = 0; i < allRows.length; i++) {
+    if (!allRows[i].classList.contains('no-data') && !allRows[i].classList.contains('error')) {
+      dataRows.push(allRows[i]);
+    }
+  }
+  
+  var startIndex = (page - 1) * homeItemsPerPage;
+  var endIndex = startIndex + homeItemsPerPage;
+  
+  // Hide all rows first
+  for (var i = 0; i < allRows.length; i++) {
+    allRows[i].style.display = 'none';
+  }
+  
+  // Show rows for current page
+  for (var i = startIndex; i < endIndex && i < dataRows.length; i++) {
+    dataRows[i].style.display = '';
+    dataRows[i].style.animation = 'fadeIn 0.3s ease-in';
+  }
+  
+  // Update current page
+  currentHomePage = page;
+  updateHomePaginationInfo();
+  
+  // Enable/disable navigation buttons
+  var prevBtn = document.getElementById('prevBtnHome');
+  var nextBtn = document.getElementById('nextBtnHome');
+  
+  if (prevBtn) {
+    prevBtn.disabled = (currentHomePage <= 1);
+  }
+  
+  if (nextBtn) {
+    nextBtn.disabled = (currentHomePage >= window.totalHomePages || window.totalHomePages <= 1);
+  }
+}
+
+// Change home page (direction: -1 for previous, 1 for next)
+// Make sure this is globally accessible
+function changePageHome(direction) {
+  // Ensure variables are initialized
+  if (typeof currentHomePage === 'undefined') {
+    currentHomePage = 1;
+  }
+  
+  // Initialize if not already done
+  if (typeof window.totalHomePages === 'undefined' || window.totalHomePages === 0) {
+    if (typeof initHomePagination !== 'undefined') {
+      initHomePagination();
+    }
+    // Re-check after initialization
+    if (typeof window.totalHomePages === 'undefined' || window.totalHomePages === 0) {
+      return; // Still no pages, don't proceed
+    }
+  }
+  
+  // Don't proceed if already at boundary
+  if (direction === -1 && currentHomePage <= 1) {
+    return; // Already on first page
+  }
+  if (direction === 1 && currentHomePage >= window.totalHomePages) {
+    return; // Already on last page
+  }
+  
+  var newPage = currentHomePage + direction;
+  
+  // Boundary checks
+  if (newPage < 1) {
+    newPage = 1;
+  } else if (newPage > window.totalHomePages) {
+    newPage = window.totalHomePages;
+  }
+  
+  // Change page if valid
+  if (newPage >= 1 && newPage <= window.totalHomePages && newPage !== currentHomePage) {
+    showHomePage(newPage);
+  }
+}
+
+// Ensure function is globally accessible
+window.changePageHome = changePageHome;
+
+// Update home pagination info display
+function updateHomePaginationInfo() {
+  var pageInfo = document.getElementById('pageInfoHome');
+  if (pageInfo && window.totalHomePages) {
+    pageInfo.textContent = 'Page ' + currentHomePage + ' of ' + window.totalHomePages;
+  }
+}
+
+// Initialize pagination when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Small delay to ensure DOM is fully ready
+  setTimeout(function() {
+    if (typeof initPagination !== 'undefined') {
+      initPagination();
+    }
+    if (typeof initEmpPagination !== 'undefined') {
+      initEmpPagination();
+    }
+    if (typeof initHomePagination !== 'undefined') {
+      initHomePagination();
+    }
+  }, 100);
+});
+
+// Also try to initialize on window load as backup
+window.addEventListener('load', function() {
+  if (typeof initHomePagination !== 'undefined' && (typeof window.totalHomePages === 'undefined' || window.totalHomePages === 0)) {
+    initHomePagination();
+  }
+});

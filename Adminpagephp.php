@@ -1,3 +1,16 @@
+<?php
+// Check if this is an AJAX request first
+$is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+// Set proper headers for AJAX requests
+if ($is_ajax) {
+  header('Content-Type: text/plain');
+}
+
+// Only output HTML if it's NOT an AJAX request
+if (!$is_ajax) {
+?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
@@ -17,6 +30,8 @@
   </body>
 </html>
 <?php
+}
+
 $servername="localhost";
 $username="root";
 $password="";
@@ -25,6 +40,10 @@ $database_name="airport_management_system";
 $conn=mysqli_connect($servername,$username,$password,$database_name);
 
 if(!$conn){
+  if ($is_ajax) {
+    echo 'ERROR: Database connection failed';
+    exit;
+  }
   die("connection failed :" . mysqli_connect_error());
 }
 if(isset($_POST['save'])){
@@ -78,16 +97,96 @@ if(isset($_POST['save'])){
 }
 
 if(isset($_POST['save2'])){
-  $flight_number = mysqli_real_escape_string($conn, $_POST['flight_number']);
+  // Get and clean the flight number
+  $flight_number = isset($_POST['flight_number']) ? trim($_POST['flight_number']) : '';
+  $flight_number = mysqli_real_escape_string($conn, $flight_number);
   
-  // Check if this is an AJAX request
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-             strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  // Debug: Log the received flight number (remove in production)
+  if ($is_ajax) {
+    error_log("Delete request - Flight number received: " . $flight_number);
+  }
   
-  $sql = "SELECT * FROM flights WHERE flight_number='$flight_number'";
-  $result = mysqli_query($conn, $sql);
-
-  if (mysqli_num_rows($result)>0) {
+  if (empty($flight_number)) {
+    if ($is_ajax) {
+      echo 'ERROR: Flight number is required';
+    } else {
+      echo '<script>alert("Error: Flight number is required");</script>';
+    }
+    mysqli_close($conn);
+    if ($is_ajax) exit;
+  } else {
+    $sql = "SELECT * FROM flights WHERE flight_number='$flight_number'";
+    $result = mysqli_query($conn, $sql);
+    
+    if (!$result) {
+      if ($is_ajax) {
+        echo 'ERROR: Database query failed: ' . mysqli_error($conn);
+      } else {
+        echo '<script>alert("Error: Database query failed");</script>';
+      }
+      mysqli_close($conn);
+      if ($is_ajax) exit;
+    } else if (mysqli_num_rows($result)>0) {
+      // Delete in correct order to respect foreign key constraints
+      // Order: Delete child records first, then parent records
+      // NOTE: We do NOT delete passengers - they may have tickets for other flights!
+      
+      // 1. Delete payments (references tickets)
+      $payments_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'payments'");
+      if ($payments_table_exists && mysqli_num_rows($payments_table_exists) > 0) {
+        // Delete payments for tickets of this flight
+        mysqli_query($conn, "DELETE p FROM payments p INNER JOIN tickets t ON p.ticket_id = t.ticket_id WHERE t.flight_number='$flight_number'");
+      }
+      
+      // 2. Delete tickets (references passenger and flights) - only for this flight
+      $tickets_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'tickets'");
+      if ($tickets_table_exists && mysqli_num_rows($tickets_table_exists) > 0) {
+        mysqli_query($conn, "DELETE FROM tickets WHERE flight_number='$flight_number'");
+      }
+      
+      // 3. Delete reservations (references passenger, flights, and seats) - only for this flight
+      $reservations_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'reservations'");
+      if ($reservations_table_exists && mysqli_num_rows($reservations_table_exists) > 0) {
+        mysqli_query($conn, "DELETE FROM reservations WHERE flight_number='$flight_number'");
+      }
+      
+      // 4. Delete flight_blocks (references flights and employee) - only for this flight
+      $flight_blocks_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'flight_blocks'");
+      if ($flight_blocks_table_exists && mysqli_num_rows($flight_blocks_table_exists) > 0) {
+        mysqli_query($conn, "DELETE FROM flight_blocks WHERE flight_number='$flight_number'");
+      }
+      
+      // 5. Handle passenger records - we DON'T delete passengers because they may have other tickets
+      // The foreign key constraint will be handled by the database when we delete the flight
+      // If passenger.flight_number has a foreign key constraint, we need to update it to NULL first
+      // But if it doesn't allow NULL, the database will handle the cascade or we'll get an error
+      $passenger_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'passenger'");
+      if ($passenger_table_exists && mysqli_num_rows($passenger_table_exists) > 0) {
+        // Try to update passenger flight_number to NULL (if column allows it)
+        // This will fail silently if NOT NULL constraint exists, which is fine
+        // The database foreign key constraint will prevent flight deletion if needed
+        @mysqli_query($conn, "UPDATE passenger SET flight_number = NULL WHERE flight_number='$flight_number'");
+      }
+      
+      // 6. Update employee records to remove flight_number reference (set to NULL)
+      $employee_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'employee'");
+      if ($employee_table_exists && mysqli_num_rows($employee_table_exists) > 0) {
+        mysqli_query($conn, "UPDATE employee SET flight_number = NULL WHERE flight_number='$flight_number'");
+      }
+      
+      // 7. Delete associated seats (if table exists)
+      $seats_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'seats'");
+      if ($seats_table_exists && mysqli_num_rows($seats_table_exists) > 0) {
+        mysqli_query($conn, "DELETE FROM seats WHERE flight_number='$flight_number'");
+      }
+      
+      // 8. Delete associated bookings (if bookings table exists)
+      $bookings_table_exists = mysqli_query($conn, "SHOW TABLES LIKE 'bookings'");
+      if ($bookings_table_exists && mysqli_num_rows($bookings_table_exists) > 0) {
+        mysqli_query($conn, "DELETE FROM bookings WHERE flight_number='$flight_number'");
+      }
+      
+      // 9. Delete the flight (must be last due to foreign key constraints)
       $sql_query= "DELETE FROM flights WHERE flight_number='$flight_number'";
       if ($conn->query($sql_query) === TRUE) {
         if ($is_ajax) {
@@ -106,15 +205,17 @@ if(isset($_POST['save2'])){
           echo '<script>alert("Error deleting flight: ' . $error . '");</script>';
         }
       }
-  } else {
-      if ($is_ajax) {
-        echo 'ERROR: Flight not found';
-      } else {
-        echo '<script>';
-        echo 'alert("Sorry, the flight number does not exist in database.");';
-        echo 'window.location.href="Adminpage.php#Flights";';
-        echo '</script>';
-      }
+    } else {
+        // Flight not found
+        if ($is_ajax) {
+          echo 'ERROR: Flight not found';
+        } else {
+          echo '<script>';
+          echo 'alert("Sorry, the flight number does not exist in database.");';
+          echo 'window.location.href="Adminpage.php#Flights";';
+          echo '</script>';
+        }
+    }
   }
 
   mysqli_close($conn);
@@ -130,10 +231,6 @@ if(isset($_POST['save2'])){
 
 if(isset($_POST['save3'])){
   $emp_id = mysqli_real_escape_string($conn, $_POST['emp_id']);
-  
-  // Check if this is an AJAX request
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-             strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
   
   $sql = "SELECT * FROM employee WHERE emp_id='$emp_id'";
   $result = mysqli_query($conn, $sql);
@@ -183,10 +280,6 @@ if(isset($_POST['bulk_delete']) && isset($_POST['flight_numbers'])){
   
   $flight_numbers_str = $_POST['flight_numbers'];
   $flight_numbers = explode(',', $flight_numbers_str);
-  
-  // Check if this is an AJAX request
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-             strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
   
   $success_count = 0;
   $error_count = 0;

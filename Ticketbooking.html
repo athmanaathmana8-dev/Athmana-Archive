@@ -866,7 +866,7 @@
             <select class="form-control mb-3" id="search_to"></select>
             
             <label class="mb-2">Date</label>
-            <input type="date" class="form-control mb-3" id="search_date" onfocus="this.setAttribute('max', new Date().toISOString().split('T')[0]); this.max = new Date().toISOString().split('T')[0];" onclick="this.setAttribute('max', new Date().toISOString().split('T')[0]); this.max = new Date().toISOString().split('T')[0];">
+            <input type="date" class="form-control mb-3" id="search_date">
             
             <button class="btn btn-primary btn-block" type="button" onclick="searchFlights('out')">
               <i class="fas fa-search"></i> Search Outbound Flights
@@ -895,7 +895,7 @@
             <select class="form-control mb-3" id="search_to_ret"></select>
             
             <label class="mb-2">Date</label>
-            <input type="date" class="form-control mb-3" id="search_date_ret" onfocus="this.setAttribute('max', new Date().toISOString().split('T')[0]); this.max = new Date().toISOString().split('T')[0];" onclick="this.setAttribute('max', new Date().toISOString().split('T')[0]); this.max = new Date().toISOString().split('T')[0];">
+            <input type="date" class="form-control mb-3" id="search_date_ret">
 
             <button class="btn btn-primary btn-block" type="button" onclick="searchFlights('ret')">
               <i class="fas fa-search"></i> Search Return Flights
@@ -1111,21 +1111,11 @@
     
     populateCitySelects();
 
-    // Set max date immediately (before DOMContentLoaded)
+    // Set max date immediately for Date of Birth only (before DOMContentLoaded)
     (function() {
       const today = new Date().toISOString().split('T')[0];
-      const outboundDateInput = document.getElementById('search_date');
-      const returnDateInput = document.getElementById('search_date_ret');
       const dobInput = document.getElementById('Date_of_Birth');
       
-      if (outboundDateInput) {
-        outboundDateInput.setAttribute('max', today);
-        outboundDateInput.max = today;
-      }
-      if (returnDateInput) {
-        returnDateInput.setAttribute('max', today);
-        returnDateInput.max = today;
-      }
       if (dobInput) {
         dobInput.setAttribute('max', today);
         dobInput.max = today;
@@ -1133,7 +1123,7 @@
     })();
 
     // Auto-search function
-    // Function to set max date to today (prevents future dates)
+    // Function to set max date to today for Date of Birth only (prevents future dates for DOB)
     let maxDateListenersAdded = false;
     
     function setMaxDateToToday() {
@@ -1141,8 +1131,6 @@
       today.setHours(23, 59, 59, 999);
       const todayString = today.toISOString().split('T')[0];
       
-      const outboundDateInput = document.getElementById('search_date');
-      const returnDateInput = document.getElementById('search_date_ret');
       const dobInput = document.getElementById('Date_of_Birth');
       
       // Function to update max date
@@ -1153,14 +1141,12 @@
         }
       }
       
-      // Update max date for all inputs
-      updateMaxDate(outboundDateInput);
-      updateMaxDate(returnDateInput);
+      // Update max date for Date of Birth only
       updateMaxDate(dobInput);
       
       // Add event listeners only once to prevent duplicates
       if (!maxDateListenersAdded) {
-        // Function to enforce max date
+        // Function to enforce max date for Date of Birth
         function enforceMaxDate(input) {
           if (!input) return;
           const today = new Date().toISOString().split('T')[0];
@@ -1171,44 +1157,14 @@
           if (input.value && input.value > today) {
             input.value = '';
             if (typeof showSnackbar !== 'undefined') {
-              showSnackbar('Future dates are not allowed. Please select today or a past date.', 'warning');
+              showSnackbar('Future dates are not allowed for Date of Birth. Please select today or a past date.', 'warning');
             } else {
-              alert('Future dates are not allowed. Please select today or a past date.');
+              alert('Future dates are not allowed for Date of Birth. Please select today or a past date.');
             }
           }
         }
         
-        if (outboundDateInput) {
-          outboundDateInput.addEventListener('focus', function() {
-            enforceMaxDate(this);
-          });
-          outboundDateInput.addEventListener('click', function() {
-            enforceMaxDate(this);
-          });
-          outboundDateInput.addEventListener('input', function() {
-            enforceMaxDate(this);
-          });
-          outboundDateInput.addEventListener('change', function() {
-            enforceMaxDate(this);
-          });
-        }
-        
-        if (returnDateInput) {
-          returnDateInput.addEventListener('focus', function() {
-            enforceMaxDate(this);
-          });
-          returnDateInput.addEventListener('click', function() {
-            enforceMaxDate(this);
-          });
-          returnDateInput.addEventListener('input', function() {
-            enforceMaxDate(this);
-          });
-          returnDateInput.addEventListener('change', function() {
-            enforceMaxDate(this);
-          });
-        }
-        
-        // Date of Birth should also not allow future dates
+        // Date of Birth should not allow future dates
         if (dobInput) {
           dobInput.addEventListener('focus', function() {
             enforceMaxDate(this);
@@ -1228,32 +1184,15 @@
       }
     }
     
-    // Initialize max date to today on page load
+    // Initialize max date to today for Date of Birth only on page load
     document.addEventListener('DOMContentLoaded', function() {
       setMaxDateToToday();
       
-      // Also set it periodically to ensure it stays updated (in case date changes)
+      // Also set it periodically to ensure it stays updated for Date of Birth (in case date changes)
       setInterval(function() {
         const today = new Date().toISOString().split('T')[0];
-        const outboundDateInput = document.getElementById('search_date');
-        const returnDateInput = document.getElementById('search_date_ret');
         const dobInput = document.getElementById('Date_of_Birth');
         
-        if (outboundDateInput) {
-          outboundDateInput.setAttribute('max', today);
-          outboundDateInput.max = today;
-          // Reset if future date was somehow entered
-          if (outboundDateInput.value && outboundDateInput.value > today) {
-            outboundDateInput.value = '';
-          }
-        }
-        if (returnDateInput) {
-          returnDateInput.setAttribute('max', today);
-          returnDateInput.max = today;
-          if (returnDateInput.value && returnDateInput.value > today) {
-            returnDateInput.value = '';
-          }
-        }
         if (dobInput) {
           dobInput.setAttribute('max', today);
           dobInput.max = today;
@@ -1365,23 +1304,7 @@
         return false;
       }
       
-      // Check if date is in the future
-      const selectedDate = new Date(dateValue + 'T00:00:00');
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Start of today
-      
-      // Compare dates (ignore time)
-      if (selectedDate > today) {
-        if (typeof showSnackbar !== 'undefined') {
-          showSnackbar(`${label} date cannot be in the future. Please select today or a past date.`, 'warning');
-        } else {
-          alert(`${label} date cannot be in the future. Please select today or a past date.`);
-        }
-        const dateInput = document.getElementById('search_date');
-        if (dateInput) dateInput.value = '';
-        return false;
-      }
-      
+      // Future dates are now allowed for flight search dates
       return true;
     }
 
@@ -1395,33 +1318,21 @@
         return false;
       }
       
-      const returnDate = new Date(dateValue + 'T00:00:00');
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Start of today
-      
-      // Check if return date is in the future
-      if (returnDate > today) {
-        if (typeof showSnackbar !== 'undefined') {
-          showSnackbar('Return date cannot be in the future. Please select today or a past date.', 'warning');
-        } else {
-          alert('Return date cannot be in the future. Please select today or a past date.');
-        }
-        const returnDateInput = document.getElementById('search_date_ret');
-        if (returnDateInput) returnDateInput.value = '';
-        return false;
-      }
-      
-      // Check if return date is after outbound date
-      const outboundDateInput = document.getElementById('search_date');
-      if (outboundDateInput && outboundDateInput.value) {
-        const outboundDate = new Date(outboundDateInput.value);
+      // Future dates are now allowed for return flight dates
+      // Only check if return date is before outbound date
+      const outboundDateValue = document.getElementById('search_date').value;
+      if (outboundDateValue) {
+        const returnDate = new Date(dateValue + 'T00:00:00');
+        const outboundDate = new Date(outboundDateValue + 'T00:00:00');
+        
         if (returnDate < outboundDate) {
           if (typeof showSnackbar !== 'undefined') {
-            showSnackbar('Return date must be after or equal to the outbound date. Please select a valid return date.', 'warning');
+            showSnackbar('Return date cannot be before the outbound date.', 'warning');
           } else {
-            alert('Return date must be after or equal to the outbound date. Please select a valid return date.');
+            alert('Return date cannot be before the outbound date.');
           }
-          document.getElementById('search_date_ret').value = '';
+          const returnDateInput = document.getElementById('search_date_ret');
+          if (returnDateInput) returnDateInput.value = '';
           return false;
         }
       }
@@ -1482,10 +1393,7 @@
         const outboundDateInput = document.getElementById('search_date');
         if (outboundDateInput) {
           outboundDateInput.addEventListener('change', function() {
-            if (validateDate(this.value, 'Outbound')) {
-              // Ensure max date is set to today
-              setMaxDateToToday();
-            }
+            validateDate(this.value, 'Outbound');
           });
         }
         

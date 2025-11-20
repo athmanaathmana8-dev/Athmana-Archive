@@ -31,6 +31,12 @@ body {
   min-height: 100vh;
 }
 
+#Employee {
+  margin-left: 260px;
+  padding: 30px;
+  min-height: 100vh;
+}
+
 .separetephpfile {
   text-align: center;
   background-color: #fff;

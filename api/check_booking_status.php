@@ -35,13 +35,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
     
-    // Get booking details by reference (case-insensitive search)
-    // Only apply last_name filter if it's a meaningful search (not 'DETAILS' placeholder)
-    $where_clause = "WHERE UPPER(TRIM(t.booking_reference)) = UPPER('$booking_reference')";
-    if (!empty($last_name) && strtoupper(trim($last_name)) !== 'DETAILS') {
-        $where_clause .= " AND t.passenger_name LIKE '%$last_name%'";
+    // Clean and prepare booking reference (remove spaces, handle BR- prefix)
+    $booking_ref_clean = strtoupper(trim(str_replace(' ', '', $booking_reference)));
+    if (!empty($booking_ref_clean) && substr($booking_ref_clean, 0, 3) !== 'BR-') {
+        // If it doesn't start with BR-, try to add it if it looks like a reference code
+        if (preg_match('/^[A-Z0-9]{8,}$/', $booking_ref_clean)) {
+            $booking_ref_clean = 'BR-' . $booking_ref_clean;
+        }
     }
     
+    // Build WHERE clause - search by booking reference (case-insensitive, flexible)
+    $where_conditions = [];
+    $booking_ref_escaped = mysqli_real_escape_string($conn, $booking_ref_clean);
+    $where_conditions[] = "(UPPER(TRIM(REPLACE(t.booking_reference, ' ', ''))) = UPPER('$booking_ref_escaped') 
+                           OR UPPER(TRIM(t.booking_reference)) = UPPER('$booking_ref_escaped'))";
+    
+    // Add name filter if provided (case-insensitive, flexible matching)
+    if (!empty($last_name) && strtoupper(trim($last_name)) !== 'DETAILS') {
+        $name_clean = mysqli_real_escape_string($conn, trim($last_name));
+        $where_conditions[] = "UPPER(t.passenger_name) LIKE UPPER('%$name_clean%')";
+    }
+    
+    $where_clause = "WHERE " . implode(" AND ", $where_conditions);
+    
+    // Query to get booking details - fetch confirmed flights (Paid status) and other bookings
     $query = "SELECT 
         t.ticket_id,
         t.ticket_number,
@@ -56,9 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         t.flight_number,
         t.payment_status,
         t.p_id,
+        t.created_at,
         f.departing_time,
         f.arrival_time,
         f.flight_company,
+        f.price_economy,
+        f.price_business,
+        f.price_first,
         p.email,
         p.phone,
         p.city,
@@ -67,15 +88,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     LEFT JOIN flights f ON t.flight_number = f.flight_number
     LEFT JOIN passenger p ON t.p_id = p.p_id
     $where_clause
-    AND (t.payment_status = 'Paid' OR t.payment_status = 'Pending')
-    ORDER BY t.ticket_id ASC";
+    ORDER BY 
+        CASE WHEN t.payment_status = 'Paid' THEN 0 ELSE 1 END,
+        t.created_at DESC, 
+        t.ticket_id DESC";
     
     $result = mysqli_query($conn, $query);
     
     if (!$result) {
         echo json_encode([
             'success' => false,
-            'error' => 'Query failed: ' . mysqli_error($conn)
+            'error' => 'Query failed: ' . mysqli_error($conn),
+            'debug_query' => $query
         ]);
         mysqli_close($conn);
         exit;
@@ -83,10 +107,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if (mysqli_num_rows($result) > 0) {
         $bookings = [];
+        $confirmed_count = 0;
+        
         while ($booking = mysqli_fetch_assoc($result)) {
-            // Format the data for each booking
+            // Determine status - show 'Confirmed' for Paid bookings
+            $payment_status = $booking['payment_status'] ?? 'Unknown';
+            $display_status = ($payment_status === 'Paid') ? 'Confirmed' : $payment_status;
+            
+            // Format price with proper currency formatting
+            $price = isset($booking['price']) ? (float)$booking['price'] : 0.00;
+            $price_formatted = number_format($price, 2, '.', ',');
+            
+            // Format date properly
+            $departure_date = $booking['departing_date'] ?? '';
+            if ($departure_date && $departure_date !== '0000-00-00') {
+                $date_obj = DateTime::createFromFormat('Y-m-d', $departure_date);
+                if ($date_obj) {
+                    $departure_date_formatted = $date_obj->format('Y-m-d');
+                } else {
+                    $departure_date_formatted = $departure_date;
+                }
+            } else {
+                $departure_date_formatted = '';
+            }
+            
+            // Format time (remove seconds if present)
+            $departure_time = $booking['departing_time'] ?? '';
+            $arrival_time = $booking['arrival_time'] ?? '';
+            if ($departure_time && strlen($departure_time) > 5) {
+                $departure_time = substr($departure_time, 0, 5);
+            }
+            if ($arrival_time && strlen($arrival_time) > 5) {
+                $arrival_time = substr($arrival_time, 0, 5);
+            }
+            
+            // Count confirmed bookings
+            if ($payment_status === 'Paid') {
+                $confirmed_count++;
+            }
+            
+            // Format the data for each booking with all confirmed flight details
             $bookings[] = [
-                'ticket_id' => $booking['ticket_id'],
+                'ticket_id' => $booking['ticket_id'] ?? 0,
                 'ticket_number' => $booking['ticket_number'] ?? '',
                 'booking_reference' => $booking['booking_reference'] ?? '',
                 'passenger_name' => $booking['passenger_name'] ?? '',
@@ -99,14 +161,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'flight_company' => $booking['flight_company'] ?? '',
                 'from' => $booking['flying_from'] ?? '',
                 'to' => $booking['flying_to'] ?? '',
-                'departure_date' => $booking['departing_date'] ?? '',
-                'departure_time' => $booking['departing_time'] ?? '',
-                'arrival_time' => $booking['arrival_time'] ?? '',
+                'departure_date' => $departure_date_formatted,
+                'departure_time' => $departure_time,
+                'arrival_time' => $arrival_time,
                 'seat_number' => $booking['seat_number'] ?? '',
                 'class' => $booking['class'] ?? '',
-                'price' => isset($booking['price']) ? (float)$booking['price'] : 0.00,
-                'status' => $booking['payment_status'] ?? 'Unknown',
-                'payment_status' => $booking['payment_status'] ?? 'Unknown'
+                'price' => $price,
+                'price_formatted' => $price_formatted,
+                'status' => $display_status,
+                'payment_status' => $payment_status,
+                'is_confirmed' => ($payment_status === 'Paid'),
+                'created_at' => $booking['created_at'] ?? ''
             ];
         }
         
@@ -114,21 +179,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $response = [
             'success' => true,
             'booking' => $bookings[0], // First booking for backward compatibility
-            'bookings' => $bookings     // All bookings array
+            'bookings' => $bookings,     // All bookings array
+            'confirmed_count' => $confirmed_count,
+            'total_count' => count($bookings),
+            'message' => $confirmed_count > 0 ? 
+                "Found {$confirmed_count} confirmed flight(s)" : 
+                "Found " . count($bookings) . " booking(s)"
         ];
     } else {
-        // Debug: Check if booking reference exists with different case or formatting
-        $debug_query = "SELECT booking_reference FROM tickets WHERE booking_reference LIKE '%" . mysqli_real_escape_string($conn, substr($booking_reference, -5)) . "%' LIMIT 5";
-        $debug_result = mysqli_query($conn, $debug_query);
-        
-        $response = [
-            'success' => false,
-            'error' => 'No booking found with the provided reference. Please check your booking reference and try again.',
-            'debug_info' => [
-                'searched_reference' => $booking_reference,
-                'similar_references' => mysqli_num_rows($debug_result) > 0 ? mysqli_fetch_all($debug_result, MYSQLI_ASSOC) : []
-            ]
-        ];
+        // Try to find booking by reference only (without name filter) if name was provided
+        if (!empty($last_name) && strtoupper(trim($last_name)) !== 'DETAILS') {
+            $ref_only_query = "SELECT 
+                t.ticket_id,
+                t.booking_reference,
+                t.passenger_name
+            FROM tickets t
+            WHERE (UPPER(TRIM(REPLACE(t.booking_reference, ' ', ''))) = UPPER('$booking_ref_escaped') 
+                   OR UPPER(TRIM(t.booking_reference)) = UPPER('$booking_ref_escaped'))
+            LIMIT 1";
+            
+            $ref_only_result = mysqli_query($conn, $ref_only_query);
+            if ($ref_only_result && mysqli_num_rows($ref_only_result) > 0) {
+                $ref_booking = mysqli_fetch_assoc($ref_only_result);
+                $response = [
+                    'success' => false,
+                    'error' => 'Booking reference found, but the name does not match. Please verify the name you entered matches the booking.',
+                    'hint' => 'Found booking for: ' . ($ref_booking['passenger_name'] ?? 'Unknown')
+                ];
+            } else {
+                $response = [
+                    'success' => false,
+                    'error' => 'No booking found with the provided reference. Please check your booking reference and try again.'
+                ];
+            }
+        } else {
+            $response = [
+                'success' => false,
+                'error' => 'No booking found with the provided reference. Please check your booking reference and try again.'
+            ];
+        }
     }
     
     echo json_encode($response);
